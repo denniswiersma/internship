@@ -6,7 +6,6 @@
 # METADATA
 
 # IMPORTS
-import tomllib
 from enum import Enum
 
 import matplotlib.pyplot as plt
@@ -119,25 +118,7 @@ class GLM:
 
 
 def main():
-    with open("config.toml", "rb") as file:
-        config = tomllib.load(file)
-
-    data = Data(config)
-
-    glm = GLM(data)
-
-    mm_with_tt = data.get_mm_with_tt()
-
-    subset = data.get_subset(mm_with_tt, n_rows=10000, n_cols=100, n_labels=10)
-    subset = subset.set_index("samples")
-    print(subset)
-
-    train, test, val = data.get_train_test_val(
-        train_size=0.7, test_size=0.15, val_size=0.15, data=subset
-    )
-    # glm.plot_label_distribution(train, test, val)
-
-    glm.fit_glm(train)
+    print("This file is meant to be imported, not run on it's own.")
 
 
 if __name__ == "__main__":
