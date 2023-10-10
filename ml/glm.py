@@ -6,12 +6,12 @@
 # METADATA
 
 # IMPORTS
+import tomllib
 from enum import Enum
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-import tomllib
 from rpy2 import robjects
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import importr

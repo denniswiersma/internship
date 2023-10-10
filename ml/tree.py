@@ -8,12 +8,12 @@
 # IMPORTS
 import itertools
 import multiprocessing as mp
+import tomllib
 from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import tomllib
 from rpy2 import robjects
 from rpy2.robjects.packages import importr
 
