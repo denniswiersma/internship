@@ -1,0 +1,66 @@
+\chapter{Methods}
+This project can be divided into several phases, which will be discussed below.
+
+\section{Literature}
+The techniques used by this research group will be read up on to get a sense of what they are working on.
+Additionally, some elements in their work's biological context need revision to have a good understanding of the subject matter.
+
+Independent Component Analysis (ICA) is at the centre of the research performed by this group and is, therefore, one of the most important techniques to understand for this project.
+Although an mRNA expression profile is the starting point of the analysis process, this isn’t the primary dataset that will be utilised.
+Instead, a post-ICA mixing matrix will be employed.
+This means a product of ICA is the starting point of this project, making it all the more important to understand what goes in, what comes out, and what happens when performing ICA.
+
+\section{Exploratory Data Analysis}
+To gain familiarity with the data at hand and preprocess said data, an Exploratory Data Analysis (EDA) will be performed.
+The exact methods to be employed for this process will reveal themselves as more knowledge is gained, but there are a few steps that can be performed in any case:
+\begin{itemize}
+    \item Calculate basic statistics for important features.
+    \item Perform hypothesis tests on (select subsets of) the data in order to gain insight into the relations between variables.
+    \item Produce a heatmap to visualise relations between variables, as is typical in the analysis of mRNA profiles.
+    \item Filter the data for missing values.
+\end{itemize}
+Exactly how these steps manifest themselves and the results will guide any follow-up analysis.
+
+\section{Machine Learning}
+The main objective of this project is to produce a machine learning algorithm which can accurately predict what cancer type belongs to a given mRNA expression profile.
+Therefore, it is one of the most essential and extended phases and should be performed carefully.
+
+As mentioned in the previous chapter, incomplete annotations form a bottleneck in the analysis of mRNA profiles.
+Additionally, a straightforward method like GBA does not suffice.
+Therefore, an algorithm that can correctly annotate mRNA expression profiles may provide meaningful value.
+
+Before commencing this project, ICA has been performed on the mRNA profiles.
+ICA outputs data that may be separated into two different datasets, of which one is of interest for this project.
+This dataset is a mixing matrix containing weights representing the activity of Transcriptional Components (TCs) in biopsy samples.
+This mixing matrix will be used to train the machine learning algorithm.
+The samples can be matched to their respective cancer type, providing a meaningful categorical variable that may serve as the target variable.
+
+The problem lends itself well to a classic method like a decision tree or a random forest.
+More elaborate methods may be employed, but an elegant, less involved process would be preferable in the interest of time.
+However, other methods may be explored if trees or forests yield insufficient performance.
+The model should perform to a level that is satisfactory to the point where it may be used in researchers' analysis pipelines.
+
+\section{Webapplication}
+A secondary objective for this project is to develop a web application around the trained machine learning model.
+The goal is to let the user supply unannotated data, have the model provide annotations and a confidence level for the prediction, and return the data to the user.
+
+The application will be written in Python.
+Python has two dominant web frameworks: Flask and Django.
+Since the web application is a secondary objective, the choice of framework will be deferred to when this phase is reached.
+
+HTML combined with CSS is the obvious way to go on the front.
+While HTML does not confront us with more decisions, CSS does.
+It may be wise to choose a CSS flavour that decreases the development time needed instead of handwriting CSS.
+There exist many wrappers around CSS, and for the same reason as mentioned above, a decision here will be deferred to a later phase.
+
+\section{Workflow}
+To keep things running smoothly, effort must be put into the system rather than the work itself.
+
+Code will be collected and presented in a git repository hosted on GitHub.
+This repository should provide ample documentation on both methods employed during development and instructions on deploying the final product.
+To keep the repository organised, the Git flow method of branching will be used.
+
+Tracking todos will be done using GitHub’s project system.
+This will provide integration with the repository, making issues easier to manage.
+
+Lastly, if time allows, a DOCKERFILE will be written to containerise the application, allowing painless deployment.

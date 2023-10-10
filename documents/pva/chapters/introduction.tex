@@ -1,0 +1,29 @@
+\chapter{Introduction}
+Taking mRNA expression profiles from patients or cell lines can provide tremendous insight for both medical and research purposes.
+Approximately 280,000 of these profiles are publicly available, but incomplete annotations bottleneck further analysis.
+Automatically annotating these mRNA expression profiles, while not mission-critical, would ease this process.
+A straightforward and comparably fast annotation method would be guilt by association (GBA) using the expression profiles themselves.
+A significant issue with this approach originates from the fact that most of the samples involved are derived from a biopsy where various signals (e.g., biological pathways, non-cancer tissues, nonbiological effects) are intermingled in the final mRNA expression profiles. A dominating signal could significantly influence the annotation made for a given sample using GBA, producing a biased annotation. Independent component analysis (ICA) has been utilised to circumvent this issue.
+
+The collection and processing of this transcriptional data results in the starting point for this project — a database containing expression levels associated with their genes for some 280,000 samples.
+Before commencing this project, a subset of the available data was manually annotated by collecting annotation information from the corresponding publications.
+This work placement project will aim to automate the annotation of mRNA expression profiles using this partially annotated data to train a machine learning algorithm.
+
+\section{Aims}
+This work placement will aim to train a machine-learning algorithm to annotate mRNA expression profiles correctly.
+If time allows, a web application will be developed to make the model accessible to other parties.
+
+\begin{itemize}
+    \item Primary: Train a machine learning algorithm to annotate mRNA expression profiles correctly
+    \begin{itemize}
+        \item Data exploration
+        \item Model selection \& training
+        \item Model evaluation
+    \end{itemize}
+    \item Secondary: Develop a web application to annotate user's mRNA expression profiles using the trained model.
+    \begin{itemize}
+        \item Infrastructure
+        \item Backend logic
+        \item Frontend design
+    \end{itemize}
+\end{itemize}

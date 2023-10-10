@@ -1,0 +1,75 @@
+\begin{landscape}
+\chapter{Gantt Chart}
+
+\vspace{3em}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% --- Week counting system --- %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Create a new counter for the *visual* side of the weeks and set it to 36
+\newcounter{myWeekNum}
+\setcounter{myWeekNum}{36}
+
+% This command makes sure that the counter does not go past the amount of weeks in a year
+\newcommand{\myWeek}{
+    \themyWeekNum % Retrieve current value of `myWeekNum`
+    \stepcounter{myWeekNum} % Go 1 week further
+    \ifnum\themyWeekNum=53 % If we're now at week 53
+        \setcounter{myWeekNum}{1} % Forcibly set to week 1
+    \fi
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% --- Gantt chart styling --- %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{ganttchart}[
+    % Title styling
+    title/.append style={fill=black!30},
+    title label font=\tiny,
+    y unit title=17.5pt, % Title bar height
+    title height=1, % Title height (% of y height)
+    x unit=3.5pt, % Cell width
+    y unit chart=20pt, % Row height
+    bar height=0.7, % Bar height (% of row height)
+    bar top shift=0.15, % Bar top start (half of remaining % row height)
+    bar/.append style={fill=black!100}, % Styling of the bars
+    bar label font=\small, % Styling of the task text
+    time slot format=isodate,
+    % Dotted grid lines
+    vgrid={*{6}{draw=none}, dotted},
+    hgrid,
+]{2023-09-04}{2024-01-26}
+
+    \ganttset{calendar week text={\myWeek{}}}
+    \gantttitlecalendar{month=name, week=36}\\
+    % \gantttitle[title label node/.append style={below left=7pt and -3pt}]{WEEKS:\quad1}{1}
+
+    %%%%%%%%%%%%%%%%%
+    % --- Tasks --- %
+    %%%%%%%%%%%%%%%%%
+    \ganttbar{Literature Research}%
+        {2023-09-04}{2023-10-08} \\
+    \ganttbar{Plan of Approach}%
+        {2023-09-11}{2023-09-26} \\
+    \ganttbar{Exploratory Data Analysis}%
+        {2023-09-04}{2023-10-01} \\
+    \ganttbar{ML: Model Selection}%
+        {2023-09-25}{2023-10-15} \\
+    \ganttbar{ML: Training}%
+        {2023-10-09}{2023-11-12} \\
+    \ganttbar{ML: Evaluation}%
+        {2023-10-30}{2023-11-12} \\
+    \ganttbar{WA: Decisions}%
+        {2023-11-13}{2023-11-19} \\
+    \ganttbar{WA: Backend}%
+        {2023-11-13}{2023-12-10} \\
+    \ganttbar{WA: Frontend}%
+        {2023-12-04}{2023-12-24} \\
+    \ganttbar{Design and create a Poster}%
+        {2024-01-02}{2024-01-26} \\
+    \ganttbar{Write Final Report}%
+        {2023-11-13}{2024-01-26}
+
+\end{ganttchart}
+\captionof{figure}{Gantt chart visualising project timeline}
+\end{landscape}
