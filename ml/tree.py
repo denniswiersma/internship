@@ -6,6 +6,7 @@
 # METADATA
 
 # IMPORTS
+import tomllib
 from data import Data
 import itertools
 from pathlib import Path
@@ -30,7 +31,7 @@ class TreeBuilder:
     def build_formula(
         self,
         predictors: list = ["consensus independent component 1"],
-        response: str = "TYPE3",
+        response: str = "response",
     ):
         # build formula to be passed to the model
         model_formula: str = f"{response} ~ "
@@ -53,7 +54,7 @@ class TreeBuilder:
         splittest: bool = False,
         alpha: float = 0.05,
         predictors: list = ["consensus independent component 1"],
-        response: str = "TYPE3",
+        response: str = "response",
     ):
         if splittest and not isinstance(testtype, np.ndarray):
             if testtype != "MonteCarlo":
@@ -121,9 +122,12 @@ def main():
     # print starting timestamp
     now = datetime.now()
     print(f"starting time: {now.time()}")
+    with open("config.toml", "rb") as file:
+        config = tomllib.load(file)
+
+    data = Data(config)
 
     # load data and pass to treebuilder
-    data = Data(data_folder="data/")
     treebuilder = TreeBuilder(data)
 
     # define parameters to be passed to ctree

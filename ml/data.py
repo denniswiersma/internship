@@ -8,6 +8,7 @@
 # IMPORTS
 import pandas as pd
 import numpy as np
+import tomllib
 from datetime import datetime
 import rpy2.robjects as ro
 from rpy2.robjects import pandas2ri
@@ -17,17 +18,17 @@ from sklearn.model_selection import train_test_split
 
 
 class Data:
-    def __init__(self, data_folder: str):
+    def __init__(self, config: dict):
         """
         Initialises the Data class by using the data_folder to read the data.
 
         :param data_folder: Path to the folder containing the data.
         """
-        self.data_folder = data_folder
+        self.config = config
 
-        self.read_data(data_folder)
+        self.read_data()
 
-    def read_data(self, data_folder: str):
+    def read_data(self):
         """
         Read the mixing matrix file and the tumor type annotation file.
         Only reads the "Name" and "TYPE3" columns in the mixing matrix.
@@ -38,22 +39,31 @@ class Data:
         print("Reading data...")
 
         # read tumor type annotations
-        with open(
-            data_folder
-            + "TCGA__Sample_To_TumorType_with_common_cancer_type_mapping_GEO_TCGA.csv"
-        ) as file:
+        with open(self.config["data"]["locations"]["tumor_types"]) as file:
             self.tumor_types: pd.DataFrame = pd.read_csv(
-                file, usecols=["Name", "TYPE3"]
+                file,
+                usecols=[
+                    self.config["data"]["columns"]["tumor_types"][
+                        "sample_name"
+                    ],
+                    self.config["data"]["columns"]["tumor_types"]["response"],
+                ],
+            ).rename(
+                columns={
+                    self.config["data"]["columns"]["tumor_types"][
+                        "sample_name"
+                    ]: "samples",
+                    self.config["data"]["columns"]["tumor_types"][
+                        "response"
+                    ]: "response",
+                }
             )
 
-        with open(
-            data_folder + "ica_flipped_mixing_matrix_consensus.tsv"
-        ) as file:
+        with open(self.config["data"]["locations"]["mixing_matrix"]) as file:
             self.mixing_matrix: pd.DataFrame = (
                 pd.read_csv(
                     file,
                     sep="\t",
-                    # skiprows=lambda x: x not in self.tumor_types["Name"],
                 )
                 .rename(columns={"Unnamed: 0": "samples"})
                 .set_index("samples")
@@ -67,7 +77,10 @@ class Data:
         :return: Mixing matrix as a pandas dataframe
         """
         return self.tumor_types.merge(
-            self.mixing_matrix, left_on="Name", right_on="samples", how="inner"
+            self.mixing_matrix,
+            left_on="samples",
+            right_on="samples",
+            how="inner",
         )
 
     def get_r_mm_with_tt(self) -> pd.DataFrame:
@@ -81,7 +94,7 @@ class Data:
 
         print("making R dataframe...")
         pandas2ri.activate()
-        mm_with_tt["TYPE3"] = mm_with_tt["TYPE3"].astype("category")
+        mm_with_tt["response"] = mm_with_tt["response"].astype("category")
         r_mm_with_tt = pandas2ri.py2rpy(mm_with_tt)
         ro.r.assign("r_mm_with_tt", r_mm_with_tt)
 
@@ -94,7 +107,6 @@ class Data:
         test_size: float,
         val_size: float,
         seed: int = 42,
-        stratify_col: str = "TYPE3",
     ) -> set[pd.DataFrame]:
         """
         Splits a pandas dataframe into test, train, and validation data using
@@ -105,7 +117,6 @@ class Data:
         :param test_size: Fraction of data to assign to test set.
         :param val_size: Fraction of data to assign to validation set.
         :param seed: A seed for the random shuffling of data.
-        :param stratify_col: The column to use for stratifying. Should be the
         the response variable column.
         :return: Three pandas dataframes in order of train, test, validate.
         """
@@ -113,14 +124,14 @@ class Data:
         train_df, temp_df = train_test_split(
             data,
             test_size=(test_size + val_size),
-            stratify=data[stratify_col],
+            stratify=data["response"],
             random_state=seed,
         )
 
         test_df, val_df = train_test_split(
             temp_df,
             test_size=(val_size / (test_size + val_size)),
-            stratify=temp_df[stratify_col],
+            stratify=temp_df["response"],
             random_state=seed,
         )
 
@@ -145,7 +156,7 @@ class Data:
         :return: The subsetted pandas dataframe.
         """
         # Get a list of unique labels in the "TYPE3" column
-        unique_labels = data["TYPE3"].unique()
+        unique_labels = data["response"].unique()
 
         # Ensure that there are enough unique labels to meet the requirement
         if len(unique_labels) < n_labels:
@@ -155,7 +166,7 @@ class Data:
         selected_labels = unique_labels[:n_labels]
 
         # Filter the DataFrame to include only rows with the selected labels
-        filtered_data = data[data["TYPE3"].isin(selected_labels)]
+        filtered_data = data[data["response"].isin(selected_labels)]
 
         # Ensure n_rows and n_cols do not exceed the available rows and columns
         n_rows = min(n_rows, len(filtered_data))
@@ -174,12 +185,15 @@ def main():
     now = datetime.now()
     print(f"starting time: {now.time()}")
 
-    m = Data(data_folder="data/")
+    with open("config.toml", "rb") as file:
+        config = tomllib.load(file)
+
+    m = Data(config)
 
     print(m.mixing_matrix.shape)
 
     x = m.get_subset(
-        data=m.get_mm_with_tt(), n_rows=5000, n_cols=50, n_labels=9, seed=80
+        data=m.get_mm_with_tt(), n_rows=5000, n_cols=50, n_labels=9
     )
 
     print(x)

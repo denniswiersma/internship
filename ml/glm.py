@@ -6,6 +6,7 @@
 # METADATA
 
 # IMPORTS
+import tomllib
 from enum import Enum
 import pandas as pd
 from data import Data
@@ -23,28 +24,27 @@ class GLM:
         self.mixing_matrix: pd.DataFrame = data.mixing_matrix
         self.tumor_types: pd.DataFrame = data.tumor_types
         self.mm_with_tt: pd.DataFrame = data.get_mm_with_tt()
-        # self.r_mm_with_tt = data.get_r_mm_with_tt()
 
     def plot_label_distribution(self, train_df, test_df, val_df) -> None:
         # Create subplots for each dataset
         fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
         # Plot the label distribution for the training set
-        sns.countplot(data=train_df, x="TYPE3", ax=axes[0])
+        sns.countplot(data=train_df, x="response", ax=axes[0])
         axes[0].set_title("Training Set Label Distribution")
         axes[0].set_xlabel("Label")
         axes[0].set_ylabel("Count")
         axes[0].tick_params(axis="x", rotation=90)
 
         # Plot the label distribution for the test set
-        sns.countplot(data=test_df, x="TYPE3", ax=axes[1])
+        sns.countplot(data=test_df, x="response", ax=axes[1])
         axes[1].set_title("Test Set Label Distribution")
         axes[1].set_xlabel("Label")
         axes[1].set_ylabel("Count")
         axes[1].tick_params(axis="x", rotation=90)
 
         # Plot the label distribution for the validation set
-        sns.countplot(data=val_df, x="TYPE3", ax=axes[2])
+        sns.countplot(data=val_df, x="response", ax=axes[2])
         axes[2].set_title("Validation Set Label Distribution")
         axes[2].set_xlabel("Label")
         axes[2].set_ylabel("Count")
@@ -65,13 +65,13 @@ class GLM:
             ridge = 0
 
         # select all columns but the one with labels
-        xtrain = train.loc[:, train.columns != "TYPE3"]
+        xtrain = train.loc[:, train.columns != "response"]
         # take a subset (columns 1 through 5) of the data because time
         xtrain = xtrain.iloc[:, 1:]
         # last row is a weird NaN value that shouldn't be there, so remove it
         ytrain = train.iloc[:, :]
         # select just the column with labels
-        ytrain = ytrain.loc[:, ytrain.columns == "TYPE3"]
+        ytrain = ytrain.loc[:, ytrain.columns == "response"]
 
         # convert python variables to R objects
         pandas2ri.activate()
@@ -118,14 +118,17 @@ class GLM:
 
 
 def main():
-    data = Data(data_folder="data/")
+    with open("config.toml", "rb") as file:
+        config = tomllib.load(file)
+
+    data = Data(config)
 
     glm = GLM(data)
 
     mm_with_tt = data.get_mm_with_tt()
 
     subset = data.get_subset(mm_with_tt, n_rows=10000, n_cols=100, n_labels=10)
-    subset = subset.set_index("Name")
+    subset = subset.set_index("samples")
     print(subset)
 
     train, test, val = data.get_train_test_val(
