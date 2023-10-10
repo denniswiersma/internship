@@ -1,0 +1,17 @@
+[data]
+
+[data.locations] # paths are to be defined relative to the project root
+mixing_matrix = "path/to/mixing_matrix"
+tumor_types = "path/to/tumor_type/annotation"
+
+[data.columns]
+
+[data.colums.mixing_matrix]
+sample_name = "[SAMPLE NAME COLUMN]"
+
+[data.columns.tumor_types]
+sample_name = "[SAMPLE NAME COLUMN]"
+response = "[RESPONSE VARIABLE COLUMN]"
+
+[execution]
+cores = 8 # number of cores to use where multiprocessing is applicable

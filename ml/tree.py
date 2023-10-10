@@ -6,10 +6,6 @@
 # METADATA
 
 # IMPORTS
-import itertools
-import multiprocessing as mp
-import tomllib
-from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -90,10 +86,10 @@ class TreeBuilder:
 
         if len(predictors) > 1:
             file_path = Path(
-                f"tree/{predictors[0]}_{predictors[-1]}/" + file_name
+                f"ml/{predictors[0]}_{predictors[-1]}/" + file_name
             )
         else:
-            file_path = Path(f"tree/{predictors[0]}/" + file_name)
+            file_path = Path(f"ml/{predictors[0]}/" + file_name)
 
         if not file_path.parent.exists():
             file_path.parent.mkdir()
@@ -114,63 +110,14 @@ class TreeBuilder:
 
         grdevices.dev_off()
 
+        return file_path
+
 
 # FUNCTIONS
 
 
 def main():
-    # print starting timestamp
-    now = datetime.now()
-    print(f"starting time: {now.time()}")
-    with open("config.toml", "rb") as file:
-        config = tomllib.load(file)
-
-    data = Data(config)
-
-    # load data and pass to treebuilder
-    treebuilder = TreeBuilder(data)
-
-    # define parameters to be passed to ctree
-    teststats: list[str] = ["quad", "max"]
-    testtypes: list[str | list] = [
-        "Teststatistic",
-        "Univariate",
-        "Bonferroni",
-        "MonteCarlo",
-        robjects.r.c("MonteCarlo", "Bonferroni"),
-    ]
-    splitstats: list[str] = ["quad", "max"]
-    # splittests: list[bool] = [True, False]
-    alphas: list[float] = [0.1, 0.05, 0.01]
-    predictors: list[list[str]] = [
-        ["consensus independent component 1"],
-        ["consensus independent component 2"],
-        ["consensus independent component 3"],
-    ]
-
-    # make all possible combinations of parameters above
-    arg_combos = itertools.product(
-        teststats, testtypes, splitstats, alphas, predictors
-    )
-
-    # i = 0
-    # for x in arg_combos:
-    #     i += 1
-    # print(i)
-
-    t2 = datetime.now()
-    # with mp.Pool(1) as p:
-    #     p.starmap(treebuilder.build_ctree, arg_combos)
-
-    treebuilder.build_ctree(
-        testtype=robjects.r.c("MonteCarlo", "Bonferroni"),
-        teststat="quad",
-        splittest=False,
-        predictors=[
-            "consensus independent component 1",
-        ],
-    )
-    print(datetime.now() - t2)
+    print("This file is meant to be imported, not run on it's own.")
 
 
 if __name__ == "__main__":
