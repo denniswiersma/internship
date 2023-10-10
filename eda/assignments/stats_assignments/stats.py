@@ -5,17 +5,19 @@
 
 # METADATA
 
+import itertools
+import multiprocessing as mp
+import re
+from functools import partial
+
+import matplotlib.pyplot as plt
 # IMPORTS
 import pandas as pd
-from data import Data
-from scipy import stats
-import itertools
-import tqdm
-from functools import partial
-import multiprocessing as mp
 import seaborn as sns
-import matplotlib.pyplot as plt
-import re
+import tqdm
+from scipy import stats
+
+from data import Data
 
 
 # CLASSES

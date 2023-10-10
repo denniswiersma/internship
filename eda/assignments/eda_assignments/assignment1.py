@@ -9,12 +9,13 @@ A, B for all cancer types.
 
 # METADATA
 
-# IMPORTS
-import os
-import pandas as pd
-import matplotlib.pyplot as plt
 import itertools
 import multiprocessing as mp
+# IMPORTS
+import os
+
+import matplotlib.pyplot as plt
+import pandas as pd
 from tqdm.contrib.concurrent import process_map
 
 # CLASSES

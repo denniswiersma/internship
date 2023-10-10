@@ -5,13 +5,14 @@
 
 # METADATA
 
+from datetime import datetime
+
+import matplotlib.colors as colors
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 # IMPORTS
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import matplotlib.colors as colors
 import seaborn as sns
-from datetime import datetime
 
 # CLASSES
 

@@ -6,18 +6,18 @@
 # METADATA
 
 # IMPORTS
-import tomllib
-from data import Data
 import itertools
+import multiprocessing as mp
+from datetime import datetime
 from pathlib import Path
 
-import pandas as pd
 import numpy as np
-from datetime import datetime
-
-from rpy2.robjects.packages import importr
+import pandas as pd
+import tomllib
 from rpy2 import robjects
-import multiprocessing as mp
+from rpy2.robjects.packages import importr
+
+from data import Data
 
 
 # CLASSES

@@ -6,9 +6,9 @@ Cluster genes & cluster samples
 then show annotation on the side (like a coloured bar for cancer types)
 """
 
+import matplotlib.pyplot as plt
 # IMPORTS
 import pandas as pd
-import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm.contrib.concurrent import process_map
 

@@ -5,9 +5,9 @@
 
 # METADATA
 
+import matplotlib.pyplot as plt
 # IMPORTS
 import pandas as pd
-import matplotlib.pyplot as plt
 
 # CLASSES
 
