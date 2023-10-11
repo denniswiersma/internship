@@ -90,16 +90,9 @@ class GLM:
         r_ytrain = robjects.r["ytrain"]
 
         print("Doing cv.glmnet...")
-        # cv_glmnet_res = cv_glmnet(
-        #     r_xtrain,
-        #     r_ytrain,
-        #     family="multinomial",
-        #     intercept=True,
-        #     standardize=False,
-        # )
 
         cv_glmnet_res = robjects.r(
-            "cv.glmnet(x=xtrain, y=ytrain, family='multinomial', intercept=TRUE, standardize=FALSE)"
+            "cv.glmnet(x=xtrain, y=ytrain, family='multinomial', intercept=TRUE, standardize=FALSE, thres=1e-05)"
         )
 
         robjects.r.assign("cv_glmnet_res", cv_glmnet_res)
