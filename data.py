@@ -81,7 +81,7 @@ class Data:
             left_on="samples",
             right_on="samples",
             how="inner",
-        )
+        ).set_index("samples")
 
     def get_r_mm_with_tt(self) -> pd.DataFrame:
         """
