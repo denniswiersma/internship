@@ -96,6 +96,7 @@ class GLM:
         )
 
         print(fit_optimised)
+        return fit_optimised
 
 
 # FUNCTIONS
