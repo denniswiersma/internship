@@ -29,22 +29,26 @@ class GLM:
         # Create subplots for each dataset
         fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
+        class_names = train_df["response"].unique()
+
         # Plot the label distribution for the training set
-        sns.countplot(data=train_df, x="response", ax=axes[0])
+        sns.countplot(
+            data=train_df, x="response", ax=axes[0], order=class_names
+        )
         axes[0].set_title("Training Set Label Distribution")
         axes[0].set_xlabel("Label")
         axes[0].set_ylabel("Count")
         axes[0].tick_params(axis="x", rotation=90)
 
         # Plot the label distribution for the test set
-        sns.countplot(data=test_df, x="response", ax=axes[1])
+        sns.countplot(data=test_df, x="response", ax=axes[1], order=class_names)
         axes[1].set_title("Test Set Label Distribution")
         axes[1].set_xlabel("Label")
         axes[1].set_ylabel("Count")
         axes[1].tick_params(axis="x", rotation=90)
 
         # Plot the label distribution for the validation set
-        sns.countplot(data=val_df, x="response", ax=axes[2])
+        sns.countplot(data=val_df, x="response", ax=axes[2], order=class_names)
         axes[2].set_title("Validation Set Label Distribution")
         axes[2].set_xlabel("Label")
         axes[2].set_ylabel("Count")
