@@ -98,6 +98,18 @@ class GLM:
         print(fit_optimised)
         return fit_optimised
 
+    def predict(self, model, newx: pd.DataFrame, type: str):
+        pandas2ri.activate()
+
+        r_newx = pandas2ri.py2rpy(newx)
+        robjects.r.assign("newx", r_newx)
+        robjects.r("newx <- data.matrix(newx)")
+
+        robjects.r.assign("model", model)
+        robjects.r.assign("type", type)
+
+        return robjects.r("predict(model, newx=newx, type=type)")
+
 
 # FUNCTIONS
 
