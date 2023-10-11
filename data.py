@@ -137,6 +137,14 @@ class Data:
 
         return train_df, test_df, val_df
 
+    def split_xy(self, data: pd.DataFrame):
+        # select all columns but the one with labels
+        x = data.loc[:, data.columns != "response"]
+        # select just the column with labels
+        y = data.loc[:, data.columns == "response"]
+
+        return x, y
+
     def get_subset(
         self,
         data: pd.DataFrame,

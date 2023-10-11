@@ -52,7 +52,7 @@ class GLM:
         plt.tight_layout()
         plt.show()
 
-    def fit_glm(self, train: pd.DataFrame):
+    def fit_glm(self, xtrain: pd.DataFrame, ytrain: pd.DataFrame):
         # import glmnet
         importr("glmnet")
         # assign r callable to python variable
@@ -63,15 +63,6 @@ class GLM:
             lasso = 1
             elastic_net = 0.5
             ridge = 0
-
-        # select all columns but the one with labels
-        xtrain = train.loc[:, train.columns != "response"]
-        # take a subset (columns 1 through 5) of the data because time
-        xtrain = xtrain.iloc[:, 1:]
-        # last row is a weird NaN value that shouldn't be there, so remove it
-        ytrain = train.iloc[:, :]
-        # select just the column with labels
-        ytrain = ytrain.loc[:, ytrain.columns == "response"]
 
         # convert python variables to R objects
         pandas2ri.activate()
@@ -92,7 +83,7 @@ class GLM:
         print("Doing cv.glmnet...")
 
         cv_glmnet_res = robjects.r(
-            "cv.glmnet(x=xtrain, y=ytrain, family='multinomial', intercept=TRUE, standardize=FALSE, thres=1e-05)"
+            "cv.glmnet(x=xtrain, y=ytrain, family='multinomial', intercept=TRUE, standardize=FALSE)"
         )
 
         robjects.r.assign("cv_glmnet_res", cv_glmnet_res)
