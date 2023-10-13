@@ -190,21 +190,7 @@ class Data:
 
 
 def main():
-    now = datetime.now()
-    print(f"starting time: {now.time()}")
-
-    with open("config.toml", "rb") as file:
-        config = tomllib.load(file)
-
-    m = Data(config)
-
-    print(m.mixing_matrix.shape)
-
-    x = m.get_subset(
-        data=m.get_mm_with_tt(), n_rows=5000, n_cols=50, n_labels=9
-    )
-
-    print(x)
+    print("This file is meant to be imported, not run on it's own.")
 
 
 if __name__ == "__main__":
