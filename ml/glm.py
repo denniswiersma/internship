@@ -80,10 +80,6 @@ class GLM:
         robjects.r("xtrain <- data.matrix(xtrain)")
         robjects.r("ytrain <- factor(unlist(ytrain))")
 
-        # convert R object back to python
-        r_xtrain = robjects.r["xtrain"]
-        r_ytrain = robjects.r["ytrain"]
-
         print("Doing cv.glmnet...")
 
         cv_glmnet_res = robjects.r(
@@ -93,10 +89,12 @@ class GLM:
         robjects.r.assign("cv_glmnet_res", cv_glmnet_res)
         robjects.r.assign("alpha", 1)
 
+        print(cv_glmnet_res)
+
         print("Doing glmnet...")
 
         fit_optimised = robjects.r(
-            "glmnet(x=xtrain, y=ytrain, alpha=alpha, lambda=cv_glmnet_res$lambda.min, family='multinomial', intercept=TRUE, standardize=FALSE, maxit=1e+06)"
+            "glmnet(x=xtrain, y=ytrain, alpha=alpha, lambda=cv_glmnet_res$lambda.min, family='multinomial', intercept=TRUE, standardize=FALSE, maxit=1e+05)"
         )
 
         print(fit_optimised)
