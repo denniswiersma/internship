@@ -6,14 +6,13 @@
 # METADATA
 
 # IMPORTS
-from enum import Enum
-
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from rpy2 import robjects
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import importr
+from sklearn import metrics
 
 from data import Data
 
@@ -62,12 +61,6 @@ class GLM:
         # assign r callable to python variable
         cv_glmnet = robjects.r["cv.glmnet"]
 
-        # enum representing alpha options
-        class Alpha(Enum):
-            lasso = 1
-            elastic_net = 0.5
-            ridge = 0
-
         # convert python variables to R objects
         pandas2ri.activate()
         r_xtrain = pandas2ri.py2rpy(xtrain)
@@ -111,6 +104,26 @@ class GLM:
         robjects.r.assign("type", type)
 
         return robjects.r("predict(model, newx=newx, type=type)")
+
+    def assess(self, ytrue, ypredict, ypredict_probs):
+        class_names = ytrue["response"].unique()
+
+        confusion_matrix = metrics.confusion_matrix(
+            ytrue, ypredict, normalize="true"
+        )
+        metrics.ConfusionMatrixDisplay(
+            confusion_matrix, display_labels=class_names
+        ).plot(xticks_rotation="vertical", cmap="binary")
+
+        print(metrics.classification_report(ytrue, ypredict))
+
+        print(
+            "AUC ROC:",
+            metrics.roc_auc_score(
+                ytrue["response"], ypredict_probs, multi_class="ovr"
+            ),
+        )
+        print("MCC:", metrics.matthews_corrcoef(ytrue, ypredict))
 
 
 # FUNCTIONS
