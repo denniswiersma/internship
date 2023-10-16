@@ -6,10 +6,8 @@
 # METADATA
 
 # IMPORTS
-import tomllib
-from datetime import datetime
-
 import pandas as pd
+import polars as pl
 import rpy2.robjects as ro
 from rpy2.robjects import pandas2ri
 from sklearn.model_selection import train_test_split
@@ -39,35 +37,20 @@ class Data:
         print("Reading data...")
 
         # read tumor type annotations
-        with open(self.config["data"]["locations"]["tumor_types"]) as file:
-            self.tumor_types: pd.DataFrame = pd.read_csv(
-                file,
-                usecols=[
-                    self.config["data"]["columns"]["tumor_types"][
-                        "sample_name"
-                    ],
-                    self.config["data"]["columns"]["tumor_types"]["response"],
-                ],
-            ).rename(
-                columns={
-                    self.config["data"]["columns"]["tumor_types"][
-                        "sample_name"
-                    ]: "samples",
-                    self.config["data"]["columns"]["tumor_types"][
-                        "response"
-                    ]: "response",
-                }
-            )
+        self.tumor_types: pl.DataFrame = pl.read_csv(
+            self.config["data"]["locations"]["tumor_types"],
+            columns=[
+                self.config["data"]["columns"]["tumor_types"]["sample_name"],
+                self.config["data"]["columns"]["tumor_types"]["response"],
+            ],
+            new_columns=["samples", "response"],
+        )
 
-        with open(self.config["data"]["locations"]["mixing_matrix"]) as file:
-            self.mixing_matrix: pd.DataFrame = (
-                pd.read_csv(
-                    file,
-                    sep="\t",
-                )
-                .rename(columns={"Unnamed: 0": "samples"})
-                .set_index("samples")
-            )
+        self.mixing_matrix: pl.DataFrame = pl.read_csv(
+            self.config["data"]["locations"]["mixing_matrix"],
+            separator="\t",
+            new_columns=["samples"],
+        )
 
     def get_mm_with_tt(self) -> pd.DataFrame:
         """
