@@ -6,6 +6,7 @@
 # METADATA
 
 # IMPORTS
+import pickle as pkl
 from pathlib import Path
 
 import numpy as np
@@ -42,6 +43,89 @@ class TreeBuilder:
 
         return model_formula
 
+    def ctree(
+        self,
+        teststat: str = "quad",
+        testtype: str = "Bonferroni",
+        splitstat: str = "quad",
+        splittest: bool = False,
+        alpha: float = 0.05,
+        predictors: list = ["consensus independent component 1"],
+        response: str = "response",
+    ):
+        return
+
+    def save_tree(
+        self,
+        model,
+        teststat: str = "quad",
+        testtype: str = "Bonferroni",
+        splitstat: str = "quad",
+        splittest: bool = False,
+        alpha: float = 0.05,
+        predictors: list = ["consensus independent component 1"],
+        type: str | list[str] = ["img", "model"],
+    ):
+        # construct a string describing the tree's settings
+        file_name = f"ctree_ts={teststat}_tt={testtype}_ss={splitstat}_st={splittest}_a={alpha}"
+        print(file_name)
+
+        # construct path to file based on predictors
+        if len(predictors) > 1:
+            file_path = Path(
+                f"ml/{predictors[0]}_{predictors[-1]}/" + file_name
+            )
+        else:
+            file_path = Path(f"ml/{predictors[0]}/" + file_name)
+
+        if not file_path.parent.exists():
+            file_path.parent.mkdir()
+
+        def save_image(file_path):
+            # append file extension
+            file_path = file_path.with_suffix(".png")
+            # import the graphics device in order to enable saving images to
+            # disk
+            grdevices = importr("grDevices")
+            grdevices.png(
+                file=file_path.as_posix(),
+                width=5000,
+                height=1500,
+            )
+
+            # plot the tree and save to disk
+            robjects.r.plot(
+                model,
+                margins=robjects.r.list(15, 0, 0, 0),
+                tp_args=robjects.r.list(
+                    rot=90, just=robjects.r.c("right", "top")
+                ),
+            )
+            # disable graphics device
+            grdevices.dev_off()
+            print(f"saved image at {file_path}")
+
+        def save_model(file_path):
+            # append file extension
+            file_path = file_path.with_suffix(".pkl")
+
+            with open(file_path, "wb") as file:
+                pkl.dump(model, file=file)
+            print("saved model")
+
+        match type:
+            case "img":
+                save_image(file_path)
+            case "model":
+                save_model(file_path)
+            case ["img", "model"] | ["model", "img"]:
+                save_image(file_path)
+                save_model(file_path)
+            case _:
+                raise ValueError(
+                    f"{type} not of valid values 'img' 'model' ['img', 'model']"
+                )
+
     def build_ctree(
         self,
         teststat: str = "quad",
@@ -64,8 +148,6 @@ class TreeBuilder:
         ctree_control = robjects.r["ctree_control"]
 
         print("building tree...")
-        file_name = f"ctree_ts={teststat}_tt={testtype}_ss={splitstat}_st={splittest}_a={alpha}.png"
-        print(file_name)
         # define control options
         control = ctree_control(
             teststat=teststat,
@@ -82,35 +164,7 @@ class TreeBuilder:
             control=control,
         )
 
-        # check if directory exists yet before trying to save to it
-
-        if len(predictors) > 1:
-            file_path = Path(
-                f"ml/{predictors[0]}_{predictors[-1]}/" + file_name
-            )
-        else:
-            file_path = Path(f"ml/{predictors[0]}/" + file_name)
-
-        if not file_path.parent.exists():
-            file_path.parent.mkdir()
-
-        # save plot to disk
-        grdevices = importr("grDevices")
-        grdevices.png(
-            file=file_path.as_posix(),
-            width=5000,
-            height=1500,
-        )
-
-        robjects.r.plot(
-            model,
-            margins=robjects.r.list(15, 0, 0, 0),
-            tp_args=robjects.r.list(rot=90, just=robjects.r.c("right", "top")),
-        )
-
-        grdevices.dev_off()
-
-        return file_path
+        return model
 
 
 # FUNCTIONS
