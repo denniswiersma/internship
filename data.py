@@ -75,6 +75,30 @@ class Data:
                 .set_index("samples")
             )
 
+    def filter_tt(self, min_n: int) -> None:
+        """
+        Filters both the mixing matrix and the tumor type annotations to only
+        include tumor types with at least min_n samples.
+
+        :param min_n: Minimum number of samples per tumor type
+        :return: None
+        """
+        # get the number of samples per tumor type
+        tt_counts = self.tumor_types["response"].value_counts()
+
+        # get the tumor types with at least min_n samples
+        tt_to_keep = tt_counts[tt_counts >= min_n].index
+
+        # filter the tumor types
+        self.tumor_types = self.tumor_types[
+            self.tumor_types["response"].isin(tt_to_keep)
+        ]
+
+        # filter the mixing matrix
+        self.mixing_matrix = self.mixing_matrix[
+            self.mixing_matrix.index.isin(self.tumor_types["samples"])
+        ]
+
     def get_mm_with_tt(self) -> pd.DataFrame:
         """
         Returns the mixing matrix with a column called "TYPE3" containing each
