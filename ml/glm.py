@@ -78,18 +78,18 @@ class GLM:
         print("Doing cv.glmnet...")
 
         cv_glmnet_res = robjects.r(
-            "cv.glmnet(x=xtrain, y=ytrain, family='multinomial', intercept=TRUE, standardize=FALSE)"
+            "cv.glmnet(x=xtrain, y=ytrain, family='multinomial', intercept=TRUE, standardize=FALSE, thresh=1e-3)"
         )
 
         robjects.r.assign("cv_glmnet_res", cv_glmnet_res)
-        robjects.r.assign("alpha", 1)
+        robjects.r.assign("alpha", 0.4)
 
         print(cv_glmnet_res)
 
         print("Doing glmnet...")
 
         fit_optimised = robjects.r(
-            "glmnet(x=xtrain, y=ytrain, alpha=alpha, lambda=cv_glmnet_res$lambda.min, family='multinomial', intercept=TRUE, standardize=FALSE, maxit=1e+05)"
+            "glmnet(x=xtrain, y=ytrain, alpha=alpha, lambda=cv_glmnet_res$lambda.min, family='multinomial', intercept=TRUE, standardize=FALSE, maxit=1e+10)"
         )
 
         print(fit_optimised)
