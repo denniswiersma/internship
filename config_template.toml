@@ -6,7 +6,7 @@ tumor_types = "path/to/tumor_type/annotation"
 
 [data.columns]
 
-[data.colums.mixing_matrix]
+[data.columns.mixing_matrix]
 sample_name = "[SAMPLE NAME COLUMN]"
 
 [data.columns.tumor_types]

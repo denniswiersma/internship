@@ -65,7 +65,13 @@ class Data:
                     file,
                     sep="\t",
                 )
-                .rename(columns={"Unnamed: 0": "samples"})
+                .rename(
+                    columns={
+                        self.config["data"]["columns"]["mixing_matrix"][
+                            "sample_name"
+                        ]: "samples"
+                    }
+                )
                 .set_index("samples")
             )
 
@@ -191,6 +197,11 @@ class Data:
 
 def main():
     print("This file is meant to be imported, not run on it's own.")
+
+    with open("config.toml", "rb") as file:
+        config = tomllib.load(file)
+
+    data = Data(config)
 
 
 if __name__ == "__main__":
