@@ -5,6 +5,8 @@
 
 # METADATA
 
+import matplotlib.colors as colors
+import matplotlib.patches as mpatches
 # IMPORTS
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -124,6 +126,87 @@ class GLM:
             ),
         )
         print("MCC:", metrics.matthews_corrcoef(ytrue, ypredict))
+
+    def assess_cm(self, model, ypredict_probs, ytest):
+        predictions = pd.DataFrame(
+            ypredict_probs, columns=robjects.r("names(coef(model))")
+        )
+
+        # list all the unique tumor types found in the dataset
+        unique_tumor_types = ytest["response"].unique()
+
+        # pair each tumor type with a colour
+        lut = dict(
+            zip(
+                unique_tumor_types,
+                sns.color_palette("hls", len(unique_tumor_types)),
+            )
+        )
+
+        # map each colour to its tumor type in the origional dataframe
+        # this will result in a dataframe of coloyrs where the indexes match
+        # with the indexes of the tumor types in the origional dataframe
+        row_colours = ytest["response"].map(lut)
+
+        # make patchesfor the tumor type legend: colour and tumor type label
+        legend_TN = [
+            mpatches.Patch(facecolor=colour, label=label, edgecolor="black")
+            for label, colour in lut.items()
+        ]
+
+        legend_TN.append(
+            mpatches.Patch(
+                facecolor="white",
+                label="Missing cancer type",
+                edgecolor="black",
+            )
+        )
+
+        # find the lowest value in the dataframe
+        # used for the lower limit of the colourmap
+        a, b = predictions.stack().idxmin()
+        vmin = predictions.loc[[a], [b]].values
+
+        # find the highest value in the dataframe
+        # used for the upper limit of the colourmap
+        a, b = predictions.stack().idxmax()
+        vmax = predictions.loc[[a], [b]].values
+
+        # normalise with a center of zero
+        norm = colors.TwoSlopeNorm(vmin=vmin, vcenter=0.5, vmax=vmax)
+
+        # create the clustermap
+        cm = sns.clustermap(
+            predictions.reset_index(
+                drop=True
+            ),  # resetting the index needed to get the tumor type bar to colour
+            method="ward",
+            metric="correlation",
+            row_colors=row_colours.reset_index(
+                drop=True
+            ),  # adds tumor type bar
+            xticklabels=True,
+            yticklabels=False,
+            cbar_kws={"label": "Probability"},  # adds label to cbar
+            cmap="seismic",
+            figsize=(10, 20),
+            vmin=vmin,
+            vmax=vmax,
+            norm=norm,
+        )
+
+        # set x and y labels
+        cm.ax_heatmap.set(xlabel="Predicted label", ylabel="Samples")
+
+        # configure tumor type legend
+        leg = cm.ax_heatmap.legend(
+            loc="center right",
+            bbox_to_anchor=(1.4, 0.8),
+            handles=legend_TN,
+            frameon=True,
+        )
+        leg.set_title(title="Tumor type", prop={"size": 10})
+        plt.show()
 
 
 # FUNCTIONS
