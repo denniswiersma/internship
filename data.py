@@ -99,6 +99,20 @@ class Data:
             self.mixing_matrix.index.isin(self.tumor_types["samples"])
         ]
 
+    def replace_sample_sep(self, sep: str) -> None:
+        """
+        Replace the "-" in the sample names with another character in the
+        mixing matrix and the tumor type annotations.
+
+        :return: None
+        """
+        self.tumor_types["samples"] = self.tumor_types["samples"].str.replace(
+            "-", sep
+        )
+        self.mixing_matrix.index = self.mixing_matrix.index.str.replace(
+            "-", sep
+        )
+
     def get_mm_with_tt(self) -> pd.DataFrame:
         """
         Returns the mixing matrix with a column called "TYPE3" containing each
