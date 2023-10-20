@@ -89,7 +89,7 @@ class GLM:
         print("Doing glmnet...")
 
         fit_optimised = robjects.r(
-            "glmnet(x=xtrain, y=ytrain, alpha=alpha, lambda=cv_glmnet_res$lambda.min, family='multinomial', intercept=TRUE, standardize=FALSE, maxit=1e+10)"
+            "glmnet(x=xtrain, y=ytrain, alpha=alpha, lambda=cv_glmnet_res$lambda.min, family='multinomial', intercept=TRUE, standardize=FALSE, maxit=1e+09)"
         )
 
         print(fit_optimised)
