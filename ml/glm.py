@@ -181,7 +181,7 @@ class GLM:
                 drop=True
             ),  # resetting the index needed to get the tumor type bar to colour
             method="ward",
-            metric="correlation",
+            metric="euclidean",
             row_colors=row_colours.reset_index(
                 drop=True
             ),  # adds tumor type bar
