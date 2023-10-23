@@ -57,39 +57,64 @@ class GLM:
         plt.tight_layout()
         plt.show()
 
-    def fit_glm(self, xtrain: pd.DataFrame, ytrain: pd.DataFrame):
-        # import glmnet
-        importr("glmnet")
-        # assign r callable to python variable
-        cv_glmnet = robjects.r["cv.glmnet"]
+    def fit(
+        self,
+        xtrain: pd.DataFrame,
+        ytrain: pd.DataFrame,
+        alpha: float = 0.5,
+        thresh: float = 1e-7,
+        maxit: int = 1e5,
+    ) -> robjects.r:
+        # import glmnet into R environment
+        """
+        Runs cv.glmnet and glmnet on the given dataset.
 
-        # convert python variables to R objects
+        :param xtrain: The covariates in the training set.
+        :param ytrain: The response in the training set.
+        :param alpha: The alpha value to control regularization in glmnet.
+        :param thresh: The threshold value to control convergence in cv.glmnet.
+        :param maxit: The maximum number of iterations to run in glmnet.
+        :return: The fitted model as an R object.
+        """
+        importr("glmnet")
+
+        # convert python dataframes to R objects
+        # activate converter
         pandas2ri.activate()
+        # convert to R dataframes
         r_xtrain = pandas2ri.py2rpy(xtrain)
         r_ytrain = pandas2ri.py2rpy(ytrain)
+        # assign to variables in R environment
         robjects.r.assign("xtrain", r_xtrain)
         robjects.r.assign("ytrain", r_ytrain)
-        # change ytrain to a factor
+        # remove missing values
         robjects.r("xtrain <- na.omit(xtrain)")
         robjects.r("ytrain <- na.omit(ytrain)")
+        # convert x to matrix
         robjects.r("xtrain <- data.matrix(xtrain)")
+        # convert y to factor
         robjects.r("ytrain <- factor(unlist(ytrain))")
 
         print("Doing cv.glmnet...")
+        # assign thresh to variable in R environment
+        robjects.r.assign("thresh", thresh)
 
+        # run cv.glmnet
         cv_glmnet_res = robjects.r(
-            "cv.glmnet(x=xtrain, y=ytrain, family='multinomial', intercept=TRUE, standardize=FALSE, thresh=1e-3)"
+            "cv.glmnet(x=xtrain, y=ytrain, family='multinomial', intercept=TRUE, standardize=FALSE, thresh=thresh)"
         )
 
+        # assign cv_glmnet_res, maxit, and alpha to variables in R environment
         robjects.r.assign("cv_glmnet_res", cv_glmnet_res)
-        robjects.r.assign("alpha", 0.4)
+        robjects.r.assing("maxit", maxit)
+        robjects.r.assign("alpha", alpha)
 
         print(cv_glmnet_res)
-
         print("Doing glmnet...")
 
+        # run glmnet
         fit_optimised = robjects.r(
-            "glmnet(x=xtrain, y=ytrain, alpha=alpha, lambda=cv_glmnet_res$lambda.min, family='multinomial', intercept=TRUE, standardize=FALSE, maxit=1e+09)"
+            "glmnet(x=xtrain, y=ytrain, alpha=alpha, lambda=cv_glmnet_res$lambda.min, family='multinomial', intercept=TRUE, standardize=FALSE, maxit=maxit)"
         )
 
         print(fit_optimised)
