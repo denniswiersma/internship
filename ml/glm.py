@@ -106,7 +106,7 @@ class GLM:
 
         # assign cv_glmnet_res, maxit, and alpha to variables in R environment
         robjects.r.assign("cv_glmnet_res", cv_glmnet_res)
-        robjects.r.assing("maxit", maxit)
+        robjects.r.assign("maxit", maxit)
         robjects.r.assign("alpha", alpha)
 
         print(cv_glmnet_res)
