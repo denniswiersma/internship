@@ -5,9 +5,9 @@
 
 # METADATA
 
+import random
 # IMPORTS
 import tomllib
-from datetime import datetime
 
 import pandas as pd
 import rpy2.robjects as ro
@@ -197,35 +197,39 @@ class Data:
         n_labels: int,
     ) -> pd.DataFrame:
         """
-        Extract a subset of a pandas dataframe of a given size, with n number
-        of response variables (labels).
+        Creates a randomly selected subset of the data with n_rows rows, n_cols
+        columns, and n_labels labels.
 
-        :param data: A generic pandas dataframe. Any should work.
-        :param n_rows: Number of rows to select.
-        :param n_cols: Number of columns to select.
-        :param n_labels: Number of labels (reponse) to select.
-        :raises ValueError: When you request more labels than are available.
-        :return: The subsetted pandas dataframe.
+        :param data: A pandas dataframe with the data to subset.
+        :param n_rows: The number of rows to include in the subset.
+        :param n_cols: The number of columns to include in the subset.
+        :param n_labels: The number of labels to include in the subset.
+        :return: A pandas dataframe with the subset.
         """
-        # Get a list of unique labels in the "TYPE3" column
+        # get a list of all unique labels
         unique_labels = data["response"].unique()
 
-        # Ensure that there are enough unique labels to meet the requirement
-        if len(unique_labels) < n_labels:
-            raise ValueError("Not enough unique labels available.")
+        # a list of n_labels randomly selected labels
+        tumor_types = random.choices(unique_labels, k=n_labels)
 
-        # Randomly choose n_labels unique labels to include in the subset
-        selected_labels = unique_labels[:n_labels]
+        # subset of data with only the randomly selected labels
+        subset = data[data["response"].isin(tumor_types)]
 
-        # Filter the DataFrame to include only rows with the selected labels
-        filtered_data = data[data["response"].isin(selected_labels)]
+        # randomly select n_rows rows and n_cols columns from the subset
+        subset = subset.sample(n=n_rows, axis=0)
+        subset = subset.sample(n=n_cols, axis=1)
 
-        # Ensure n_rows and n_cols do not exceed the available rows and columns
-        n_rows = min(n_rows, len(filtered_data))
-        n_cols = min(n_cols, len(data.columns))
-
-        # Select exactly n_rows rows and n_cols columns from the filtered subset
-        subset = filtered_data.iloc[:n_rows, :n_cols]
+        # at least 2 samples per tumor type are needed for glmnet, so
+        # if the number of samples per tumor type is less than 2
+        # or if the number of tumor types is less than n_labels
+        # recursively call this function until there are at least 2 samples per
+        # tumor type and at least n_labels tumor types
+        if (
+            subset["response"].value_counts().min() < 2
+            or len(subset["response"].unique()) < n_labels
+        ):
+            del subset  # delete last call's subset to preserve memory
+            subset = self.get_subset(data, n_rows, n_cols, n_labels)
 
         return subset
 
