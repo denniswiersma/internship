@@ -5,9 +5,9 @@
 
 # METADATA
 
-import random
 # IMPORTS
-import tomllib
+import random
+from typing import Tuple, cast
 
 import pandas as pd
 import rpy2.robjects as ro
@@ -140,7 +140,7 @@ class Data:
         pandas2ri.activate()
         mm_with_tt["response"] = mm_with_tt["response"].astype("category")
         r_mm_with_tt = pandas2ri.py2rpy(mm_with_tt)
-        ro.r.assign("r_mm_with_tt", r_mm_with_tt)
+        ro.r.assign("r_mm_with_tt", r_mm_with_tt)  # type: ignore
 
         return r_mm_with_tt
 
@@ -151,7 +151,7 @@ class Data:
         test_size: float,
         val_size: float,
         seed: int = 42,
-    ) -> set[pd.DataFrame]:
+    ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
         Splits a pandas dataframe into test, train, and validation data using
         stratified sampling.
@@ -172,6 +172,8 @@ class Data:
             random_state=seed,
         )
 
+        temp_df = cast(pd.DataFrame, temp_df)
+
         test_df, val_df = train_test_split(
             temp_df,
             test_size=(val_size / (test_size + val_size)),
@@ -179,13 +181,17 @@ class Data:
             random_state=seed,
         )
 
-        return train_df, test_df, val_df
+        return (
+            cast(pd.DataFrame, train_df),
+            cast(pd.DataFrame, test_df),
+            cast(pd.DataFrame, val_df),
+        )
 
     def split_xy(self, data: pd.DataFrame):
-        # select all columns but the one with labels
-        x = data.loc[:, data.columns != "response"]
+        # drop the response column to get just the features
+        x = data.drop(columns=["response"])
         # select just the column with labels
-        y = data.loc[:, data.columns == "response"]
+        y = data["response"]
 
         return x, y
 
@@ -210,14 +216,14 @@ class Data:
         unique_labels = data["response"].unique()
 
         # a list of n_labels randomly selected labels
-        tumor_types = random.choices(unique_labels, k=n_labels)
+        tumor_types = random.sample(unique_labels.tolist(), k=n_labels)
 
         # subset of data with only the randomly selected labels
         subset = data[data["response"].isin(tumor_types)]
 
         # randomly select n_rows rows and n_cols columns from the subset
         subset = subset.sample(n=n_rows, axis=0)
-        subset = subset.sample(n=n_cols, axis=1)
+        subset = subset.sample(n=n_cols, axis=1)  # type: ignore
 
         # at least 2 samples per tumor type are needed for glmnet, so
         # if the number of samples per tumor type is less than 2
@@ -276,11 +282,6 @@ class Data:
 
 def main():
     print("This file is meant to be imported, not run on it's own.")
-
-    with open("config.toml", "rb") as file:
-        config = tomllib.load(file)
-
-    data = Data(config)
 
 
 if __name__ == "__main__":
