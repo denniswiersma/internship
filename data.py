@@ -233,6 +233,43 @@ class Data:
 
         return subset
 
+    def subset_nrows_per_label(
+        self,
+        data: pd.DataFrame,
+        nrows_per_label: int,
+        ncols: int,
+        nlabels: int,
+    ) -> pd.DataFrame:
+        """
+        Creates a randomly selected subset of the data where each label has
+        nrows_per_label rows, ncols columns, and nlabels labels.
+
+        :param data: A pandas dataframe with the data to subset.
+        :param nrows_per_label: The number of rows per label to include in the
+        subset.
+        :param ncols: The number of columns to include in the subset.
+        :param nlabels: The number of labels to include in the subset.
+        :return: A pandas dataframe with the subset.
+        """
+        # randomly select nrows_per_label rows for each label
+        subset = data.groupby("response").apply(
+            lambda x: x.sample(n=nrows_per_label, axis=0)
+        )
+
+        # randomly select ncols columns from the subset
+        subset = subset.sample(n=ncols, axis=1)  # type: ignore
+
+        # get a list of all unique labels
+        unique_labels = subset["response"].unique()
+
+        # a list of n_labels randomly selected labels
+        tumor_types = random.sample(unique_labels.tolist(), k=nlabels)
+
+        # subset of data with only the randomly selected labels
+        subset = subset[subset["response"].isin(tumor_types)]
+
+        return subset
+
 
 # FUNCTIONS
 
