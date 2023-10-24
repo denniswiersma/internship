@@ -189,7 +189,7 @@ class Data:
 
         return x, y
 
-    def get_subset(
+    def subset(
         self,
         data: pd.DataFrame,
         n_rows: int,
@@ -229,7 +229,7 @@ class Data:
             or len(subset["response"].unique()) < n_labels
         ):
             del subset  # delete last call's subset to preserve memory
-            subset = self.get_subset(data, n_rows, n_cols, n_labels)
+            subset = self.subset(data, n_rows, n_cols, n_labels)
 
         return subset
 
