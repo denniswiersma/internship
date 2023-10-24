@@ -5,9 +5,9 @@
 
 # METADATA
 
+# IMPORTS
 import matplotlib.colors as colors
 import matplotlib.patches as mpatches
-# IMPORTS
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -22,38 +22,58 @@ from data import Data
 # CLASSES
 class GLM:
     def __init__(self, data: Data):
+        """
+        Initialises the GLM class by setting the mixing matrix, tumor types,
+        and mixing matrix with tumor types to the values in the given instance
+        of the Data class.
+
+        :param data: The instance of the Data class to use.
+        """
         self.mixing_matrix: pd.DataFrame = data.mixing_matrix
         self.tumor_types: pd.DataFrame = data.tumor_types
         self.mm_with_tt: pd.DataFrame = data.get_mm_with_tt()
 
-    def plot_label_distribution(self, train_df, test_df, val_df) -> None:
+    def plot_label_distribution(
+        self,
+        train_df: pd.DataFrame,
+        test_df: pd.DataFrame,
+        val_df: pd.DataFrame,
+    ) -> None:
+        """
+        Plots the distribution of the cancer type labels in the train, test,
+        and validation sets.
+
+        :param train_df: The training set.
+        :param test_df: The test set.
+        :param val_df: The validation set
+        :return: None
+        """
         # Create subplots for each dataset
         fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
-        class_names = train_df["response"].unique()
+        unique_tt = train_df["response"].unique()
 
         # Plot the label distribution for the training set
-        sns.countplot(
-            data=train_df, x="response", ax=axes[0], order=class_names
-        )
+        sns.countplot(data=train_df, x="response", ax=axes[0], order=unique_tt)
         axes[0].set_title("Training Set Label Distribution")
         axes[0].set_xlabel("Label")
         axes[0].set_ylabel("Count")
         axes[0].tick_params(axis="x", rotation=90)
 
         # Plot the label distribution for the test set
-        sns.countplot(data=test_df, x="response", ax=axes[1], order=class_names)
+        sns.countplot(data=test_df, x="response", ax=axes[1], order=unique_tt)
         axes[1].set_title("Test Set Label Distribution")
         axes[1].set_xlabel("Label")
         axes[1].set_ylabel("Count")
         axes[1].tick_params(axis="x", rotation=90)
 
         # Plot the label distribution for the validation set
-        sns.countplot(data=val_df, x="response", ax=axes[2], order=class_names)
+        sns.countplot(data=val_df, x="response", ax=axes[2], order=unique_tt)
         axes[2].set_title("Validation Set Label Distribution")
         axes[2].set_xlabel("Label")
         axes[2].set_ylabel("Count")
         axes[2].tick_params(axis="x", rotation=90)
+
         plt.tight_layout()
         plt.show()
 
@@ -121,50 +141,80 @@ class GLM:
         return fit_optimised
 
     def predict(self, model, newx: pd.DataFrame, type: str):
+        """
+        Predicts the response for the given covariates using the given model by
+        utilising the predict function in R.
+
+        :param model: The model to use for the prediction.
+        :param newx: A dataframe with the covariates for which to predict the
+        response.
+        :param type: The type of prediction to make. Usually "class" or "prob".
+        """
+        # activate the pandas to R converter
         pandas2ri.activate()
 
+        # convert the covariates to an R dataframe
         r_newx = pandas2ri.py2rpy(newx)
+        # assign to variable in R environment
         robjects.r.assign("newx", r_newx)
+        # turn newx into a matrix
         robjects.r("newx <- data.matrix(newx)")
 
+        # assign model and type to variables in R environment
         robjects.r.assign("model", model)
         robjects.r.assign("type", type)
 
+        # run predict and return the result
         return robjects.r("predict(model, newx=newx, type=type)")
 
-    def assess(self, ytrue, ypredict, ypredict_probs):
+    def assess(self, ytrue: list, ypredict: list, ypredict_probs: list[list]):
+        # get the unique tumor types from the true response
         class_names = ytrue["response"].unique()
 
+        # create a confusion matrix
         confusion_matrix = metrics.confusion_matrix(
             ytrue, ypredict, normalize="true"
         )
+        # plot the confusion matrix
         metrics.ConfusionMatrixDisplay(
             confusion_matrix, display_labels=class_names
         ).plot(xticks_rotation="vertical", cmap="binary")
 
+        # print the classification report containing precision, recall, and f1
         print(metrics.classification_report(ytrue, ypredict))
 
+        # print the AUC ROC
         print(
             "AUC ROC:",
             metrics.roc_auc_score(
                 ytrue["response"], ypredict_probs, multi_class="ovr"
             ),
         )
+        # print the MCC
         print("MCC:", metrics.matthews_corrcoef(ytrue, ypredict))
 
-    def assess_cm(self, model, ypredict_probs, ytest):
+    def assess_cm(self, model, ypredict_probs: list[list], ytest: pd.Series):
+        # convert the predictions to a dataframe with the correct column names
+        """
+        Plots a clustermap of the predictions to visualise the probability of
+        each tumor type for each sample.
+
+        :param model: The model used to make the predictions.
+        :param ypredict_probs: The predicted probabilities.
+        :param ytest: The true response for the testing data.
+        """
         predictions = pd.DataFrame(
             ypredict_probs, columns=robjects.r("names(coef(model))")
         )
 
         # list all the unique tumor types found in the dataset
-        unique_tumor_types = ytest["response"].unique()
+        unique_tt = ytest["response"].unique()
 
         # pair each tumor type with a colour
         lut = dict(
             zip(
-                unique_tumor_types,
-                sns.color_palette("hls", len(unique_tumor_types)),
+                unique_tt,
+                sns.color_palette("hls", len(unique_tt)),
             )
         )
 
