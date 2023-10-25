@@ -5,9 +5,10 @@
 
 # METADATA
 
-# IMPORTS
 import pickle as pkl
 from pathlib import Path
+# IMPORTS
+from typing import Callable
 
 import numpy as np
 import pandas as pd
@@ -94,11 +95,11 @@ class TreeBuilder:
             )
 
             # plot the tree and save to disk
-            robjects.r.plot(
+            robjects.r.plot(  # type: ignore
                 model,
-                margins=robjects.r.list(15, 0, 0, 0),
-                tp_args=robjects.r.list(
-                    rot=90, just=robjects.r.c("right", "top")
+                margins=robjects.r.list(15, 0, 0, 0),  # type: ignore
+                tp_args=robjects.r.list(  # type: ignore
+                    rot=90, just=robjects.r.c("right", "top")  # type: ignore
                 ),
             )
             # disable graphics device
@@ -149,7 +150,7 @@ class TreeBuilder:
 
         print("building tree...")
         # define control options
-        control = ctree_control(
+        control = ctree_control(  # type: ignore
             teststat=teststat,
             testtype=testtype,
             splitstat=splitstat,
@@ -158,8 +159,8 @@ class TreeBuilder:
         )
 
         # build the tree
-        model = ctree(
-            formula=robjects.r.formula(model_formula),
+        model = ctree(  # type: ignore
+            formula=robjects.r.formula(model_formula),  # type: ignore
             data=self.r_mm_with_tt,
             control=control,
         )
