@@ -5,10 +5,9 @@
 
 # METADATA
 
+# IMPORTS
 import pickle as pkl
 from pathlib import Path
-# IMPORTS
-from typing import Callable
 
 import numpy as np
 import pandas as pd
@@ -54,7 +53,43 @@ class TreeBuilder:
         predictors: list = ["consensus independent component 1"],
         response: str = "response",
     ):
-        return
+        # TODO: convert many of these parameters to a ctree_control dictionary
+        # TODO: add pydoc
+        # NOTE: teststat and splitstat will be set to quad regardless
+        if splittest and not isinstance(testtype, np.ndarray):
+            if testtype != "MonteCarlo":
+                return
+
+        model_formula = self.build_formula(predictors.copy(), response)
+
+        # import partykit and make objects
+        importr("partykit")
+        ctree = robjects.r["ctree"]
+        ctree_control = robjects.r["ctree_control"]
+
+        print("building tree...")  # TODO: use logging
+        # define control options
+        control = ctree_control(  # type: ignore
+            teststat=teststat,
+            testtype=testtype,
+            splitstat=splitstat,
+            splittest=splittest,
+            alpha=alpha,
+        )
+
+        # build the tree
+        model = ctree(  # type: ignore
+            formula=robjects.r.formula(model_formula),  # type: ignore
+            # TODO: use data argument (since you need to use training data)
+            data=self.r_mm_with_tt,
+            control=control,
+        )
+
+        return model
+
+    # TODO: implement plot function that returns figure and axes
+    # and let the user save the figure themselves from the ipynb.
+    # save_tree shall only save the serialised model to disk.
 
     def save_tree(
         self,
@@ -67,11 +102,15 @@ class TreeBuilder:
         predictors: list = ["consensus independent component 1"],
         type: str | list[str] = ["img", "model"],
     ):
+        # TODO: add pydoc
+
         # construct a string describing the tree's settings
+        # TODO: do this differently since many parameters will be a dictionary
         file_name = f"ctree_ts={teststat}_tt={testtype}_ss={splitstat}_st={splittest}_a={alpha}"
-        print(file_name)
+        print(file_name)  # TODO: use logging
 
         # construct path to file based on predictors
+        # TODO: don't do these folders anymore, perhaps do generate a run ID.
         if len(predictors) > 1:
             file_path = Path(
                 f"ml/{predictors[0]}_{predictors[-1]}/" + file_name
@@ -126,46 +165,6 @@ class TreeBuilder:
                 raise ValueError(
                     f"{type} not of valid values 'img' 'model' ['img', 'model']"
                 )
-
-    def build_ctree(
-        self,
-        teststat: str = "quad",
-        testtype: str = "Bonferroni",
-        splitstat: str = "quad",
-        splittest: bool = False,
-        alpha: float = 0.05,
-        predictors: list = ["consensus independent component 1"],
-        response: str = "response",
-    ):
-        if splittest and not isinstance(testtype, np.ndarray):
-            if testtype != "MonteCarlo":
-                return
-
-        model_formula = self.build_formula(predictors.copy(), response)
-
-        # import partykit and make objects
-        importr("partykit")
-        ctree = robjects.r["ctree"]
-        ctree_control = robjects.r["ctree_control"]
-
-        print("building tree...")
-        # define control options
-        control = ctree_control(  # type: ignore
-            teststat=teststat,
-            testtype=testtype,
-            splitstat=splitstat,
-            splittest=splittest,
-            alpha=alpha,
-        )
-
-        # build the tree
-        model = ctree(  # type: ignore
-            formula=robjects.r.formula(model_formula),  # type: ignore
-            data=self.r_mm_with_tt,
-            control=control,
-        )
-
-        return model
 
 
 # FUNCTIONS
