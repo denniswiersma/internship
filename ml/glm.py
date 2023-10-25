@@ -6,6 +6,8 @@
 # METADATA
 
 # IMPORTS
+from typing import Tuple
+
 import matplotlib.colors as colors
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
@@ -38,7 +40,7 @@ class GLM:
         train_df: pd.DataFrame,
         test_df: pd.DataFrame,
         val_df: pd.DataFrame,
-    ) -> None:
+    ) -> Tuple[plt.Figure, plt.Axes]:
         """
         Plots the distribution of the cancer type labels in the train, test,
         and validation sets.
@@ -46,7 +48,7 @@ class GLM:
         :param train_df: The training set.
         :param test_df: The test set.
         :param val_df: The validation set
-        :return: None
+        :return: The figure and axes of the plot.
         """
         # Create subplots for each dataset
         fig, axes = plt.subplots(1, 3, figsize=(15, 5))
@@ -77,14 +79,16 @@ class GLM:
         plt.tight_layout()
         plt.show()
 
+        return fig, axes  # type: ignore
+
     def fit(
         self,
         xtrain: pd.DataFrame,
         ytrain: pd.DataFrame,
         alpha: float = 0.5,
         thresh: float = 1e-7,
-        maxit: int = 1e5,
-    ) -> robjects.r:
+        maxit: int = int(1e5),
+    ) -> robjects.r:  # type: ignore
         # import glmnet into R environment
         """
         Runs cv.glmnet and glmnet on the given dataset.
@@ -105,8 +109,8 @@ class GLM:
         r_xtrain = pandas2ri.py2rpy(xtrain)
         r_ytrain = pandas2ri.py2rpy(ytrain)
         # assign to variables in R environment
-        robjects.r.assign("xtrain", r_xtrain)
-        robjects.r.assign("ytrain", r_ytrain)
+        robjects.r.assign("xtrain", r_xtrain)  # type: ignore
+        robjects.r.assign("ytrain", r_ytrain)  # type: ignore
         # remove missing values
         robjects.r("xtrain <- na.omit(xtrain)")
         robjects.r("ytrain <- na.omit(ytrain)")
@@ -117,7 +121,7 @@ class GLM:
 
         print("Doing cv.glmnet...")
         # assign thresh to variable in R environment
-        robjects.r.assign("thresh", thresh)
+        robjects.r.assign("thresh", thresh)  # type: ignore
 
         # run cv.glmnet
         cv_glmnet_res = robjects.r(
@@ -125,9 +129,9 @@ class GLM:
         )
 
         # assign cv_glmnet_res, maxit, and alpha to variables in R environment
-        robjects.r.assign("cv_glmnet_res", cv_glmnet_res)
-        robjects.r.assign("maxit", maxit)
-        robjects.r.assign("alpha", alpha)
+        robjects.r.assign("cv_glmnet_res", cv_glmnet_res)  # type: ignore
+        robjects.r.assign("maxit", maxit)  # type: ignore
+        robjects.r.assign("alpha", alpha)  # type: ignore
 
         print(cv_glmnet_res)
         print("Doing glmnet...")
@@ -156,20 +160,22 @@ class GLM:
         # convert the covariates to an R dataframe
         r_newx = pandas2ri.py2rpy(newx)
         # assign to variable in R environment
-        robjects.r.assign("newx", r_newx)
+        robjects.r.assign("newx", r_newx)  # type: ignore
         # turn newx into a matrix
         robjects.r("newx <- data.matrix(newx)")
 
         # assign model and type to variables in R environment
-        robjects.r.assign("model", model)
-        robjects.r.assign("type", type)
+        robjects.r.assign("model", model)  # type: ignore
+        robjects.r.assign("type", type)  # type: ignore
 
         # run predict and return the result
         return robjects.r("predict(model, newx=newx, type=type)")
 
-    def assess(self, ytrue: list, ypredict: list, ypredict_probs: list[list]):
+    def assess(
+        self, ytrue: pd.Series, ypredict: list, ypredict_probs: list[list]
+    ):
         # get the unique tumor types from the true response
-        class_names = ytrue["response"].unique()
+        class_names = ytrue.unique()
 
         # create a confusion matrix
         confusion_matrix = metrics.confusion_matrix(
@@ -186,15 +192,12 @@ class GLM:
         # print the AUC ROC
         print(
             "AUC ROC:",
-            metrics.roc_auc_score(
-                ytrue["response"], ypredict_probs, multi_class="ovr"
-            ),
+            metrics.roc_auc_score(ytrue, ypredict_probs, multi_class="ovr"),
         )
         # print the MCC
         print("MCC:", metrics.matthews_corrcoef(ytrue, ypredict))
 
-    def assess_cm(self, model, ypredict_probs: list[list], ytest: pd.Series):
-        # convert the predictions to a dataframe with the correct column names
+    def assess_cm(self, ypredict_probs: list[list], ytest: pd.Series):
         """
         Plots a clustermap of the predictions to visualise the probability of
         each tumor type for each sample.
@@ -203,12 +206,14 @@ class GLM:
         :param ypredict_probs: The predicted probabilities.
         :param ytest: The true response for the testing data.
         """
+        print(type(ypredict_probs))
+        # convert the predictions to a dataframe with the correct column names
         predictions = pd.DataFrame(
-            ypredict_probs, columns=robjects.r("names(coef(model))")
+            ypredict_probs, columns=robjects.r("names(coef(model))")  # type: ignore
         )
 
         # list all the unique tumor types found in the dataset
-        unique_tt = ytest["response"].unique()
+        unique_tt = ytest.unique()
 
         # pair each tumor type with a colour
         lut = dict(
@@ -221,7 +226,7 @@ class GLM:
         # map each colour to its tumor type in the origional dataframe
         # this will result in a dataframe of coloyrs where the indexes match
         # with the indexes of the tumor types in the origional dataframe
-        row_colours = ytest["response"].map(lut)
+        row_colours = ytest.map(lut)
 
         # make patchesfor the tumor type legend: colour and tumor type label
         legend_TN = [
@@ -239,12 +244,13 @@ class GLM:
 
         # find the lowest value in the dataframe
         # used for the lower limit of the colourmap
-        a, b = predictions.stack().idxmin()
+        print(type(predictions.stack().idxmin()))
+        a, b = predictions.stack().idxmin()  # type: ignore
         vmin = predictions.loc[[a], [b]].values
 
         # find the highest value in the dataframe
         # used for the upper limit of the colourmap
-        a, b = predictions.stack().idxmax()
+        a, b = predictions.stack().idxmax()  # type: ignore
         vmax = predictions.loc[[a], [b]].values
 
         # normalise with a center of zero
