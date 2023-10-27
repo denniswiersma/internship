@@ -147,9 +147,9 @@ class Data:
     def get_train_test_val(
         self,
         data: pd.DataFrame,
-        train_size: float,
-        test_size: float,
-        val_size: float,
+        train_size: float | int,
+        test_size: float | int,
+        val_size: float | int,
         seed: int = 42,
     ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
@@ -164,6 +164,16 @@ class Data:
         the response variable column.
         :return: Three pandas dataframes in order of train, test, validate.
         """
+        size_list = [train_size, test_size, val_size]
+        for i, size in enumerate(size_list):
+            if isinstance(size, int):
+                size_list[i] = size / len(data)
+
+        if sum(size_list) != 1:
+            raise ValueError(
+                f"The sum of the size fractions is {sum(size_list)}, but it should be 1."
+            )
+
         # split into train and temp data
         train_df, temp_df = train_test_split(
             data,
