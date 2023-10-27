@@ -206,7 +206,6 @@ class GLM:
         :param ypredict_probs: The predicted probabilities.
         :param ytest: The true response for the testing data.
         """
-        print(type(ypredict_probs))
         # convert the predictions to a dataframe with the correct column names
         predictions = pd.DataFrame(
             ypredict_probs, columns=robjects.r("names(coef(model))")  # type: ignore
@@ -244,7 +243,6 @@ class GLM:
 
         # find the lowest value in the dataframe
         # used for the lower limit of the colourmap
-        print(type(predictions.stack().idxmin()))
         a, b = predictions.stack().idxmin()  # type: ignore
         vmin = predictions.loc[[a], [b]].values
 
