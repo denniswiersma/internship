@@ -268,9 +268,13 @@ class Data:
         :return: A pandas dataframe with the subset.
         """
         # randomly select nrows_per_label rows for each label
-        subset = data.groupby("response").apply(
+        subset = data.groupby("response", as_index=False).apply(
             lambda x: x.sample(n=nrows_per_label, axis=0)
         )
+
+        # pandas' groupby adds another index making a multiindex.
+        # i think this is ridiculous behavior, but we have to deal with it.
+        subset.reset_index(level=0, inplace=True)
 
         # randomly select ncols columns from the subset
         subset = subset.sample(n=ncols, axis=1)  # type: ignore
