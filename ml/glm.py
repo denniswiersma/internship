@@ -17,6 +17,7 @@ from rpy2 import robjects
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import importr
 from sklearn import metrics
+from sklearn.metrics._plot.confusion_matrix import ConfusionMatrixDisplay
 
 from data import Data
 
@@ -174,17 +175,16 @@ class GLM:
     def assess(
         self, ytrue: pd.Series, ypredict: list, ypredict_probs: list[list]
     ):
-        # get the unique tumor types from the true response
-        class_names = ytrue.unique()
+        plt.figure(figsize=(15, 15))
 
-        # create a confusion matrix
-        confusion_matrix = metrics.confusion_matrix(
-            ytrue, ypredict, normalize="true"
+        ConfusionMatrixDisplay.from_predictions(
+            ytrue,
+            ypredict,
+            normalize="true",
+            cmap="binary",
+            xticks_rotation="vertical",
         )
-        # plot the confusion matrix
-        metrics.ConfusionMatrixDisplay(
-            confusion_matrix, display_labels=class_names
-        ).plot(xticks_rotation="vertical", cmap="binary")
+        plt.show()
 
         # print the classification report containing precision, recall, and f1
         print(metrics.classification_report(ytrue, ypredict))
