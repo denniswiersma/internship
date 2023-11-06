@@ -6,8 +6,8 @@
 # METADATA
 
 # IMPORTS
-import tomllib
-from datetime import datetime
+import random
+from typing import Tuple, cast
 
 import pandas as pd
 import rpy2.robjects as ro
@@ -65,9 +65,53 @@ class Data:
                     file,
                     sep="\t",
                 )
-                .rename(columns={"Unnamed: 0": "samples"})
+                .rename(
+                    columns={
+                        self.config["data"]["columns"]["mixing_matrix"][
+                            "sample_name"
+                        ]: "samples"
+                    }
+                )
                 .set_index("samples")
             )
+
+    def filter_tt(self, min_n: int) -> None:
+        """
+        Filters both the mixing matrix and the tumor type annotations to only
+        include tumor types with at least min_n samples.
+
+        :param min_n: Minimum number of samples per tumor type
+        :return: None
+        """
+        # get the number of samples per tumor type
+        tt_counts = self.tumor_types["response"].value_counts()
+
+        # get the tumor types with at least min_n samples
+        tt_to_keep = tt_counts[tt_counts >= min_n].index
+
+        # filter the tumor types
+        self.tumor_types = self.tumor_types[
+            self.tumor_types["response"].isin(tt_to_keep)
+        ]
+
+        # filter the mixing matrix
+        self.mixing_matrix = self.mixing_matrix[
+            self.mixing_matrix.index.isin(self.tumor_types["samples"])
+        ]
+
+    def replace_sample_sep(self, sep: str) -> None:
+        """
+        Replace the "-" in the sample names with another character in the
+        mixing matrix and the tumor type annotations.
+
+        :return: None
+        """
+        self.tumor_types["samples"] = self.tumor_types["samples"].str.replace(
+            "-", sep
+        )
+        self.mixing_matrix.index = self.mixing_matrix.index.str.replace(
+            "-", sep
+        )
 
     def get_mm_with_tt(self) -> pd.DataFrame:
         """
@@ -96,18 +140,18 @@ class Data:
         pandas2ri.activate()
         mm_with_tt["response"] = mm_with_tt["response"].astype("category")
         r_mm_with_tt = pandas2ri.py2rpy(mm_with_tt)
-        ro.r.assign("r_mm_with_tt", r_mm_with_tt)
+        ro.r.assign("r_mm_with_tt", r_mm_with_tt)  # type: ignore
 
         return r_mm_with_tt
 
     def get_train_test_val(
         self,
         data: pd.DataFrame,
-        train_size: float,
-        test_size: float,
-        val_size: float,
+        train_size: float | int,
+        test_size: float | int,
+        val_size: float | int,
         seed: int = 42,
-    ) -> set[pd.DataFrame]:
+    ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
         Splits a pandas dataframe into test, train, and validation data using
         stratified sampling.
@@ -120,6 +164,16 @@ class Data:
         the response variable column.
         :return: Three pandas dataframes in order of train, test, validate.
         """
+        size_list = [train_size, test_size, val_size]
+        for i, size in enumerate(size_list):
+            if isinstance(size, int):
+                size_list[i] = size / len(data)
+
+        if sum(size_list) != 1:
+            raise ValueError(
+                f"The sum of the size fractions is {sum(size_list)}, but it should be 1."
+            )
+
         # split into train and temp data
         train_df, temp_df = train_test_split(
             data,
@@ -128,6 +182,8 @@ class Data:
             random_state=seed,
         )
 
+        temp_df = cast(pd.DataFrame, temp_df)
+
         test_df, val_df = train_test_split(
             temp_df,
             test_size=(val_size / (test_size + val_size)),
@@ -135,17 +191,21 @@ class Data:
             random_state=seed,
         )
 
-        return train_df, test_df, val_df
+        return (
+            cast(pd.DataFrame, train_df),
+            cast(pd.DataFrame, test_df),
+            cast(pd.DataFrame, val_df),
+        )
 
     def split_xy(self, data: pd.DataFrame):
-        # select all columns but the one with labels
-        x = data.loc[:, data.columns != "response"]
+        # drop the response column to get just the features
+        x = data.drop(columns=["response"])
         # select just the column with labels
-        y = data.loc[:, data.columns == "response"]
+        y = data["response"]
 
         return x, y
 
-    def get_subset(
+    def subset(
         self,
         data: pd.DataFrame,
         n_rows: int,
@@ -153,35 +213,80 @@ class Data:
         n_labels: int,
     ) -> pd.DataFrame:
         """
-        Extract a subset of a pandas dataframe of a given size, with n number
-        of response variables (labels).
+        Creates a randomly selected subset of the data with n_rows rows, n_cols
+        columns, and n_labels labels.
 
-        :param data: A generic pandas dataframe. Any should work.
-        :param n_rows: Number of rows to select.
-        :param n_cols: Number of columns to select.
-        :param n_labels: Number of labels (reponse) to select.
-        :raises ValueError: When you request more labels than are available.
-        :return: The subsetted pandas dataframe.
+        :param data: A pandas dataframe with the data to subset.
+        :param n_rows: The number of rows to include in the subset.
+        :param n_cols: The number of columns to include in the subset.
+        :param n_labels: The number of labels to include in the subset.
+        :return: A pandas dataframe with the subset.
         """
-        # Get a list of unique labels in the "TYPE3" column
+        # get a list of all unique labels
         unique_labels = data["response"].unique()
 
-        # Ensure that there are enough unique labels to meet the requirement
-        if len(unique_labels) < n_labels:
-            raise ValueError("Not enough unique labels available.")
+        # a list of n_labels randomly selected labels
+        tumor_types = random.sample(unique_labels.tolist(), k=n_labels)
 
-        # Randomly choose n_labels unique labels to include in the subset
-        selected_labels = unique_labels[:n_labels]
+        # subset of data with only the randomly selected labels
+        subset = data[data["response"].isin(tumor_types)]
 
-        # Filter the DataFrame to include only rows with the selected labels
-        filtered_data = data[data["response"].isin(selected_labels)]
+        # randomly select n_rows rows and n_cols columns from the subset
+        subset = subset.sample(n=n_rows, axis=0)
+        subset = subset.sample(n=n_cols, axis=1)  # type: ignore
 
-        # Ensure n_rows and n_cols do not exceed the available rows and columns
-        n_rows = min(n_rows, len(filtered_data))
-        n_cols = min(n_cols, len(data.columns))
+        # at least 2 samples per tumor type are needed for glmnet, so
+        # if the number of samples per tumor type is less than 2
+        # or if the number of tumor types is less than n_labels
+        # recursively call this function until there are at least 2 samples per
+        # tumor type and at least n_labels tumor types
+        if (
+            subset["response"].value_counts().min() < 2
+            or len(subset["response"].unique()) < n_labels
+        ):
+            del subset  # delete last call's subset to preserve memory
+            subset = self.subset(data, n_rows, n_cols, n_labels)
 
-        # Select exactly n_rows rows and n_cols columns from the filtered subset
-        subset = filtered_data.iloc[:n_rows, :n_cols]
+        return subset
+
+    def subset_nrows_per_label(
+        self,
+        data: pd.DataFrame,
+        nrows_per_label: int,
+        ncols: int,
+        nlabels: int,
+    ) -> pd.DataFrame:
+        """
+        Creates a randomly selected subset of the data where each label has
+        nrows_per_label rows, ncols columns, and nlabels labels.
+
+        :param data: A pandas dataframe with the data to subset.
+        :param nrows_per_label: The number of rows per label to include in the
+        subset.
+        :param ncols: The number of columns to include in the subset.
+        :param nlabels: The number of labels to include in the subset.
+        :return: A pandas dataframe with the subset.
+        """
+        # randomly select nrows_per_label rows for each label
+        subset = data.groupby("response", as_index=False).apply(
+            lambda x: x.sample(n=nrows_per_label, axis=0)
+        )
+
+        # pandas' groupby adds another index making a multiindex.
+        # i think this is ridiculous behavior, but we have to deal with it.
+        subset.reset_index(level=0, inplace=True)
+
+        # randomly select ncols columns from the subset
+        subset = subset.sample(n=ncols, axis=1)  # type: ignore
+
+        # get a list of all unique labels
+        unique_labels = subset["response"].unique()
+
+        # a list of n_labels randomly selected labels
+        tumor_types = random.sample(unique_labels.tolist(), k=nlabels)
+
+        # subset of data with only the randomly selected labels
+        subset = subset[subset["response"].isin(tumor_types)]
 
         return subset
 
