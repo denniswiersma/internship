@@ -12,7 +12,6 @@ import pickle as pkl
 from dataclasses import dataclass
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from rpy2 import robjects
 from rpy2.robjects.packages import importr
