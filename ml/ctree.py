@@ -5,9 +5,9 @@
 
 # METADATA
 
+# IMPORTS
 import dataclasses
 import math
-# IMPORTS
 import pickle as pkl
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,7 +20,7 @@ from data import Data
 
 
 # CLASSES
-class TreeBuilder:
+class Ctree:
     def __init__(self, data: Data):
         self.mixing_matrix: pd.DataFrame = data.mixing_matrix
         self.tumor_types: pd.DataFrame = data.tumor_types
