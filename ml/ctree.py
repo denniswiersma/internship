@@ -28,7 +28,7 @@ class Ctree(Model):
         self.mm_with_tt: pd.DataFrame = data.get_mm_with_tt()
         self.r_mm_with_tt = data.get_r_mm_with_tt()
 
-    def build_formula(
+    def _build_formula(
         self,
         predictors: list = ["consensus independent component 1"],
         response: str = "response",
@@ -54,7 +54,7 @@ class Ctree(Model):
         minsplit: int = 20  # minimum sum of weights in a node to be considered for splitting
         minbucket: int = 7  # minimum sum of weights in a terminal node
 
-    def ctree(
+    def fit(
         self,
         ctree_control: ctree_control,
         predictors: list = ["consensus independent component 1"],
@@ -63,7 +63,7 @@ class Ctree(Model):
         response: str = "response",
     ):
         # TODO: add pydoc
-        model_formula = self.build_formula(predictors.copy(), response)
+        model_formula = self._build_formula(predictors.copy(), response)
 
         # import partykit and make objects
         importr("partykit")
@@ -88,7 +88,7 @@ class Ctree(Model):
     # and let the user save the figure themselves from the ipynb.
     # save_tree shall only save the serialised model to disk.
 
-    def save_tree(
+    def save(
         self,
         model,
         ctree_control: ctree_control,
