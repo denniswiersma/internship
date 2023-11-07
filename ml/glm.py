@@ -20,10 +20,11 @@ from sklearn import metrics
 from sklearn.metrics._plot.confusion_matrix import ConfusionMatrixDisplay
 
 from data import Data
+from ml.model import Model
 
 
 # CLASSES
-class GLM:
+class GLM(Model):
     def __init__(self, data: Data):
         """
         Initialises the GLM class by setting the mixing matrix, tumor types,

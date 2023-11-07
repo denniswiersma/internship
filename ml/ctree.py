@@ -17,10 +17,11 @@ from rpy2 import robjects
 from rpy2.robjects.packages import importr
 
 from data import Data
+from ml.model import Model
 
 
 # CLASSES
-class Ctree:
+class Ctree(Model):
     def __init__(self, data: Data):
         self.mixing_matrix: pd.DataFrame = data.mixing_matrix
         self.tumor_types: pd.DataFrame = data.tumor_types
