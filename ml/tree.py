@@ -5,8 +5,11 @@
 
 # METADATA
 
+import dataclasses
+import math
 # IMPORTS
 import pickle as pkl
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -43,39 +46,33 @@ class TreeBuilder:
 
         return model_formula
 
+    @dataclass
+    class ctree_control:
+        testtype: str = "Bonferroni"  # how to compute the distribution of the test statistic
+        alpha: float = 0.05  # significance level for variable selection
+        maxdepth: float | int = math.inf  # maximum depth of the tree
+        minsplit: int = 20  # minimum sum of weights in a node to be considered for splitting
+        minbucket: int = 7  # minimum sum of weights in a terminal node
+
     def ctree(
         self,
-        teststat: str = "quad",
-        testtype: str = "Bonferroni",
-        splitstat: str = "quad",
-        splittest: bool = False,
-        alpha: float = 0.05,
+        ctree_control: ctree_control,
         predictors: list = ["consensus independent component 1"],
+        # TODO: because of train_test_split, a given ncolumns will only be included in the dataset
+        # therefore, the formula should be constructed based on all the columns in the passed dataset
         response: str = "response",
     ):
-        # TODO: convert many of these parameters to a ctree_control dictionary
         # TODO: add pydoc
-        # NOTE: teststat and splitstat will be set to quad regardless
-        if splittest and not isinstance(testtype, np.ndarray):
-            if testtype != "MonteCarlo":
-                return
-
         model_formula = self.build_formula(predictors.copy(), response)
 
         # import partykit and make objects
         importr("partykit")
         ctree = robjects.r["ctree"]
-        ctree_control = robjects.r["ctree_control"]
+        ctree_control_func = robjects.r["ctree_control"]
 
         print("building tree...")  # TODO: use logging
         # define control options
-        control = ctree_control(  # type: ignore
-            teststat=teststat,
-            testtype=testtype,
-            splitstat=splitstat,
-            splittest=splittest,
-            alpha=alpha,
-        )
+        control = ctree_control_func(**dataclasses.asdict(ctree_control))  # type: ignore
 
         # build the tree
         model = ctree(  # type: ignore
@@ -94,20 +91,16 @@ class TreeBuilder:
     def save_tree(
         self,
         model,
-        teststat: str = "quad",
-        testtype: str = "Bonferroni",
-        splitstat: str = "quad",
-        splittest: bool = False,
-        alpha: float = 0.05,
+        ctree_control: ctree_control,
         predictors: list = ["consensus independent component 1"],
         type: str | list[str] = ["img", "model"],
     ):
         # TODO: add pydoc
 
         # construct a string describing the tree's settings
-        # TODO: do this differently since many parameters will be a dictionary
-        file_name = f"ctree_ts={teststat}_tt={testtype}_ss={splitstat}_st={splittest}_a={alpha}"
-        print(file_name)  # TODO: use logging
+        file_name = "ctree"
+        for key, value in dataclasses.asdict(ctree_control).items():
+            file_name += f"-{key}={str(value).replace('.', '_')}"
 
         # construct path to file based on predictors
         # TODO: don't do these folders anymore, perhaps do generate a run ID.
@@ -151,7 +144,7 @@ class TreeBuilder:
 
             with open(file_path, "wb") as file:
                 pkl.dump(model, file=file)
-            print("saved model")
+            print(f"saved model at {file_path}")
 
         match type:
             case "img":
