@@ -48,6 +48,7 @@ class Model(ABC):
     def plot(self):
         ...
 
+    @abstractmethod
     def save(self, path: Path):
         path = path.with_suffix(".pkl")
         path.parent.mkdir(parents=True)
