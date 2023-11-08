@@ -89,6 +89,44 @@ class Ctree(Model):
     def assess(self, ytrue, ypred_proba):
         pass
 
+    def plot(self):
+        # fetch the output dir for ctree
+        output_dir = Path(self.data.config["output"]["locations"]["ctree"])
+        # append the runID as a subfolder
+        output_dir = output_dir.joinpath(self.runID)
+
+        # construct a file name describing the tree's settings
+        file_name = "ctree"
+        for key, value in dataclasses.asdict(self.ctree_control).items():
+            file_name += f"-{key}={str(value).replace('.', '_')}"
+
+        # append the file name to the output dir
+        output_dir = output_dir.joinpath(file_name)
+        # append file extension
+        output_dir = output_dir.with_suffix(".png")
+        output_dir.parent.mkdir(parents=True, exist_ok=True)
+
+        # import the graphics device in enable saving images to disk
+        grdevices = importr("grDevices")
+        # prepare graphics device for plot
+        grdevices.png(
+            file=output_dir.as_posix(),
+            width=5000,
+            height=1500,
+        )
+
+        robjects.r.plot(  # type: ignore
+            self.fitted_model,
+            margins=robjects.r.list(15, 0, 0, 0),  # type: ignore
+            tp_args=robjects.r.list(  # type: ignore
+                rot=90, just=robjects.r.c("right", "top")  # type: ignore
+            ),
+        )
+
+        # disable graphics device
+        grdevices.dev_off()
+        print(f"saved image at {output_dir}")
+
     def save(self):
         # fetch the output dir for ctree
         output_dir = Path(self.data.config["output"]["locations"]["ctree"])
@@ -105,30 +143,6 @@ class Ctree(Model):
 
         # save the model as a pickle file
         super().save(path=output_dir)
-
-    def plot(self, file_path):
-        # append file extension
-        file_path = file_path.with_suffix(".png")
-        # import the graphics device in order to enable saving images to
-        # disk
-        grdevices = importr("grDevices")
-        grdevices.png(
-            file=file_path.as_posix(),
-            width=5000,
-            height=1500,
-        )
-
-        # plot the tree and save to disk
-        robjects.r.plot(  # type: ignore
-            self.fitted_model,
-            margins=robjects.r.list(15, 0, 0, 0),  # type: ignore
-            tp_args=robjects.r.list(  # type: ignore
-                rot=90, just=robjects.r.c("right", "top")  # type: ignore
-            ),
-        )
-        # disable graphics device
-        grdevices.dev_off()
-        print(f"saved image at {file_path}")
 
 
 # FUNCTIONS
