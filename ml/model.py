@@ -7,11 +7,12 @@ other things, an incapsulation of the complexities of the underlying library's
 API, and a standardised interface for the analysis stage of this project.
 
 Implementations are expected to override the abstract methods, and provide
-additional case-specific methods as required.
+additional case-specific methods as.
 """
 
 # METADATA
 
+import secrets
 # IMPORTS
 from abc import ABC, abstractmethod
 
@@ -21,6 +22,10 @@ class Model(ABC):
     @abstractmethod
     def __init__(self):
         ...
+
+    @staticmethod
+    def generate_runID() -> str:
+        return secrets.token_hex(3)
 
     @abstractmethod
     def fit(self):
