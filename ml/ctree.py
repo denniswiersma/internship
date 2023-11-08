@@ -22,11 +22,9 @@ from ml.model import Model
 # CLASSES
 class Ctree(Model):
     def __init__(self, data: Data):
-        self.mixing_matrix: pd.DataFrame = data.mixing_matrix
-        self.tumor_types: pd.DataFrame = data.tumor_types
         self.mm_with_tt: pd.DataFrame = data.get_mm_with_tt()
         self.r_mm_with_tt = data.get_r_mm_with_tt()
-        self.data = data
+        self.data: Data = data
 
     def _build_formula(
         self,
@@ -63,7 +61,6 @@ class Ctree(Model):
         response: str = "response",
     ):
         self.ctree_control = ctree_control
-        # TODO: add pydoc
         model_formula = self._build_formula(predictors.copy(), response)
 
         # import partykit and make objects
@@ -87,10 +84,6 @@ class Ctree(Model):
         self.runID = self._generate_runID()
 
         return model
-
-    # TODO: implement plot function that returns figure and axes
-    # and let the user save the figure themselves from the ipynb.
-    # save_tree shall only save the serialised model to disk.
 
     def predict(self, newx):
         pass
