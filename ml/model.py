@@ -26,6 +26,21 @@ class Model(ABC):
         ...
 
     @staticmethod
+    def _validate_path(path: Path):
+        """
+        Checks if a given path exists, and creates it if it does not.
+
+        :param path: the path to a file. Please note this does not work with
+        directories, since the parents of the path are created, not the path.
+        """
+        if not path.parent.exists():
+            print(f"Path {path.parent} does not exist. Creating it now.")
+            parent_dirs = path.parents
+            for parent_dir in reversed(parent_dirs):
+                if not parent_dir.exists():
+                    parent_dir.mkdir()
+
+    @staticmethod
     def generate_runID() -> str:
         return secrets.token_hex(3)
 
@@ -43,6 +58,7 @@ class Model(ABC):
 
     def save(self, path: Path):
         path = path.with_suffix(".pkl")
+        self._validate_path(path)
 
         with open(path, "wb") as file:
             pkl.dump(self.fitted_model, file=file)
