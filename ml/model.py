@@ -41,12 +41,13 @@ class Model(ABC):
                     parent_dir.mkdir()
 
     @staticmethod
-    def generate_runID() -> str:
+    def _generate_runID() -> str:
         return secrets.token_hex(3)
 
     @abstractmethod
     def fit(self):
         self.fitted_model = self.fit()
+        self.runID = self._generate_runID()
 
     @abstractmethod
     def predict(self, newx):
