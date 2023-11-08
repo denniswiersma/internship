@@ -83,8 +83,6 @@ class Ctree(Model):
         self.fitted_model = model
         self.runID = self._generate_runID()
 
-        return model
-
     def predict(self, newx):
         pass
 
