@@ -16,6 +16,7 @@ additional case-specific methods as.
 import pickle as pkl
 import secrets
 from abc import ABC, abstractmethod
+from datetime import datetime
 from pathlib import Path
 
 
@@ -27,7 +28,8 @@ class Model(ABC):
 
     @staticmethod
     def _generate_runID() -> str:
-        return secrets.token_hex(3)
+        now = datetime.now()
+        return now.strftime("%Y%m%d%H%M%S") + "_" + secrets.token_hex(3)
 
     @abstractmethod
     def fit(self):
