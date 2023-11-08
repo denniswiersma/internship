@@ -12,9 +12,11 @@ additional case-specific methods as.
 
 # METADATA
 
-import secrets
 # IMPORTS
+import pickle as pkl
+import secrets
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 
 # CLASSES
@@ -29,19 +31,22 @@ class Model(ABC):
 
     @abstractmethod
     def fit(self):
-        ...
+        self.fitted_model = self.fit()
 
     @abstractmethod
-    def predict(self, model, newx):
+    def predict(self, newx):
         ...
 
     @abstractmethod
     def assess(self, ytrue, ypred_proba):
         ...
 
-    @abstractmethod
-    def save(self):
-        ...
+    def save(self, path: Path):
+        path = path.with_suffix(".pkl")
+
+        with open(path, "wb") as file:
+            pkl.dump(self.fitted_model, file=file)
+        print(f"Model saved to {path}")
 
 
 # FUNCTIONS
