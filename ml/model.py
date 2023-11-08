@@ -51,7 +51,7 @@ class Model(ABC):
     @abstractmethod
     def save(self, path: Path):
         path = path.with_suffix(".pkl")
-        path.parent.mkdir(parents=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(path, "wb") as file:
             pkl.dump(self.fitted_model, file=file)
