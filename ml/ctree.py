@@ -125,7 +125,7 @@ class Ctree(Model):
 
         # disable graphics device
         grdevices.dev_off()
-        print(f"saved image at {output_dir}")
+        print(f"Plot saved to {output_dir}")
 
     def save(self):
         # fetch the output dir for ctree
