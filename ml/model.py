@@ -44,6 +44,10 @@ class Model(ABC):
     def assess(self, ytrue, ypred_proba):
         ...
 
+    @abstractmethod
+    def plot(self):
+        ...
+
     def save(self, path: Path):
         path = path.with_suffix(".pkl")
         path.parent.mkdir(parents=True)
