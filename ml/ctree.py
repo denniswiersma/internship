@@ -79,7 +79,20 @@ class Ctree(Model):
         self.runID = self._generate_runID()
 
     def predict(self, newx):
-        pass
+        # activate pandas to R converter
+        pandas2ri.activate()
+
+        # convert newx to R object
+        r_newx = pandas2ri.py2rpy(newx)
+        # assign to variable in R environment
+        robjects.r.assign("newx", r_newx)  # type: ignore
+        # convert newx to matrix
+        robjects.r("newx <- data.frame(newx)")
+        # assign fitted model to variable in R environment
+        robjects.r.assign("fitted_model", self.fitted_model)  # type: ignore
+
+        # run predict and return the result
+        return robjects.r("predict(fitted_model, newx=newx, type='prob')")
 
     def assess(self, ytrue, ypred_proba):
         pass
