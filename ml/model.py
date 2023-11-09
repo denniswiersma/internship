@@ -41,7 +41,7 @@ class Model(ABC):
         ...
 
     @abstractmethod
-    def assess(self, ytrue, ypred_proba):
+    def assess(self, ytrue, ypredict, ypredict_probs):
         ...
 
     @abstractmethod
