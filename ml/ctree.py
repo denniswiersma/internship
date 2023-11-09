@@ -13,6 +13,7 @@ from pathlib import Path
 
 import pandas as pd
 from rpy2 import robjects
+from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import importr
 
 from data import Data
@@ -23,7 +24,6 @@ from ml.model import Model
 class Ctree(Model):
     def __init__(self, data: Data):
         self.mm_with_tt: pd.DataFrame = data.get_mm_with_tt()
-        self.r_mm_with_tt = data.get_r_mm_with_tt()
         self.data: Data = data
 
     def _build_formula(
@@ -52,35 +52,30 @@ class Ctree(Model):
         minsplit: int = 20  # minimum sum of weights in a node to be considered for splitting
         minbucket: int = 7  # minimum sum of weights in a terminal node
 
-    def fit(
-        self,
-        ctree_control: CtreeControl,
-        predictors: list = ["consensus independent component 1"],
-        # TODO: because of train_test_split, a given ncolumns will only be included in the dataset
-        # therefore, the formula should be constructed based on all the columns in the passed dataset
-        response: str = "response",
-    ):
+    def fit(self, train, ctree_control: CtreeControl):
         self.ctree_control = ctree_control
-        model_formula = self._build_formula(predictors.copy(), response)
+
+        pandas2ri.activate()
+        train["response"] = train["response"].astype("category")
+        r_train = pandas2ri.py2rpy(train)
+        robjects.r.assign("train", r_train)  # type: ignore
 
         # import partykit and make objects
         importr("partykit")
         ctree = robjects.r["ctree"]
         ctree_control_func = robjects.r["ctree_control"]
 
-        print("building tree...")  # TODO: use logging
+        print("building tree...")
         # define control options
         control = ctree_control_func(**dataclasses.asdict(ctree_control))  # type: ignore
 
         # build the tree
-        model = ctree(  # type: ignore
-            formula=robjects.r.formula(model_formula),  # type: ignore
-            # TODO: use data argument (since you need to use training data)
-            data=self.r_mm_with_tt,
+        self.fitted_model = ctree(  # type: ignore
+            formula=robjects.r.formula("response ~ `.`"),  # type: ignore
+            data=r_train,
             control=control,
         )
 
-        self.fitted_model = model
         self.runID = self._generate_runID()
 
     def predict(self, newx):
