@@ -7,7 +7,7 @@ other things, an incapsulation of the complexities of the underlying library's
 API, and a standardised interface for the analysis stage of this project.
 
 Implementations are expected to override the abstract methods, and provide
-additional case-specific methods as.
+additional case-specific methods as needed.
 """
 
 # METADATA
