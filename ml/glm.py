@@ -17,7 +17,6 @@ from rpy2 import robjects
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import importr
 from sklearn import metrics
-from sklearn.metrics._plot.confusion_matrix import ConfusionMatrixDisplay
 
 from data import Data
 from ml.model import Model
@@ -176,27 +175,12 @@ class GLM(Model):
     def assess(
         self, ytrue: pd.Series, ypredict: list, ypredict_probs: list[list]
     ):
-        plt.figure(figsize=(15, 15))
-
-        ConfusionMatrixDisplay.from_predictions(
-            ytrue,
-            ypredict,
-            normalize="true",
-            cmap="binary",
-            xticks_rotation="vertical",
-        )
-        plt.show()
-
-        # print the classification report containing precision, recall, and f1
-        print(metrics.classification_report(ytrue, ypredict))
-
-        # print the AUC ROC
-        print(
-            "AUC ROC:",
+        aucroc = (
             metrics.roc_auc_score(ytrue, ypredict_probs, multi_class="ovr"),
         )
-        # print the MCC
-        print("MCC:", metrics.matthews_corrcoef(ytrue, ypredict))
+        mcc = metrics.matthews_corrcoef(ytrue, ypredict)
+
+        print(f"AUC-ROC: {aucroc}\nMCC: {mcc}")
 
     def assess_cm(self, ypredict_probs: list[list], ytest: pd.Series):
         """
