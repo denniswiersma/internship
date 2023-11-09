@@ -37,7 +37,7 @@ class Model(ABC):
         self.runID = self._generate_runID()
 
     @abstractmethod
-    def predict(self, newx):
+    def predict(self, newx, type: str):
         ...
 
     @abstractmethod
