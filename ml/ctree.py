@@ -79,7 +79,7 @@ class Ctree(Model):
 
         self.runID = self._generate_runID()
 
-    def predict(self, newx):
+    def predict(self, newx, type: str):
         # activate pandas to R converter
         pandas2ri.activate()
 
@@ -91,9 +91,15 @@ class Ctree(Model):
         robjects.r("newx <- data.frame(newx)")
         # assign fitted model to variable in R environment
         robjects.r.assign("fitted_model", self.fitted_model)  # type: ignore
+        robjects.r.assign("type", type)  # type: ignore
 
         # run predict and return the result
-        return robjects.r("predict(fitted_model, newx=newx, type='prob')")
+        pred = robjects.r("predict(fitted_model, newx=newx, type=type)")
+
+        if type == "response":
+            robjects.r.assign("pred", pred)  # type: ignore
+            pred = robjects.r("type.convert(pred, as.is=TRUE)")  # type: ignore
+        return pred
 
     def assess(self, ytrue, ypredict, ypredict_probs):
         aucroc = (
