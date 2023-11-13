@@ -102,12 +102,26 @@ class Ctree(Model):
         return pred
 
     def assess(self, ytrue, ypredict, ypredict_probs):
+        # metrics
         aucroc = (
             metrics.roc_auc_score(ytrue, ypredict_probs, multi_class="ovr"),
         )
         mcc = metrics.matthews_corrcoef(ytrue, ypredict)
 
         print(f"AUC-ROC: {aucroc}\nMCC: {mcc}")
+
+        # clustermap
+
+        output_dir = Path(self.data.config["output"]["locations"]["ctree"])
+        output_dir = output_dir.joinpath(self.runID)
+
+        file_name = "clustermap"
+        for key, value in dataclasses.asdict(self.ctree_control).items():
+            file_name += f"-{key}={str(value).replace('.', '_')}"
+
+        output_dir = output_dir.joinpath(file_name)
+
+        self._clustermap(ypredict_probs, ytrue, output_dir)
 
     def plot(self):
         # fetch the output dir for ctree
