@@ -15,7 +15,6 @@ import pandas as pd
 from rpy2 import robjects
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import importr
-from sklearn import metrics
 
 from data import Data
 from ml.model import Model
