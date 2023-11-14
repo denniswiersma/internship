@@ -108,7 +108,7 @@ class Ctree(Model):
         )
         mcc = metrics.matthews_corrcoef(ytrue, ypredict)
 
-        print(f"AUC-ROC: {aucroc}\nMCC: {mcc}")
+        print(f"AUC-ROC: {aucroc[0]}\nMCC: {mcc}")
 
         # clustermap
 
