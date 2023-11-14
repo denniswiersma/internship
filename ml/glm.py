@@ -9,8 +9,6 @@
 from pathlib import Path
 from typing import Tuple
 
-import matplotlib.colors as colors
-import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
