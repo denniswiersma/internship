@@ -87,14 +87,12 @@ class Ctree(Model):
         r_newx = pandas2ri.py2rpy(newx)
         # assign to variable in R environment
         robjects.r.assign("newx", r_newx)  # type: ignore
-        # convert newx to matrix
-        robjects.r("newx <- data.frame(newx)")
         # assign fitted model to variable in R environment
         robjects.r.assign("fitted_model", self.fitted_model)  # type: ignore
         robjects.r.assign("type", type)  # type: ignore
 
         # run predict and return the result
-        pred = robjects.r("predict(fitted_model, newx=newx, type=type)")
+        pred = robjects.r("predict(fitted_model, newdata=newx, type=type)")
 
         if type == "response":
             robjects.r.assign("pred", pred)  # type: ignore
