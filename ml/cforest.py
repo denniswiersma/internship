@@ -91,15 +91,9 @@ class Cforest(Model):
 
     def assess(self, ytrue, ypredict, ypredict_probs):
         # metrics
-        aucroc = (
-            metrics.roc_auc_score(ytrue, ypredict_probs, multi_class="ovr"),
-        )
-        mcc = metrics.matthews_corrcoef(ytrue, ypredict)
-
-        print(f"AUC-ROC: {aucroc[0]}\nMCC: {mcc}")
+        _, _ = super().assess(ytrue, ypredict, ypredict_probs)
 
         # clustermap
-
         output_dir = Path(self.data.config["output"]["locations"]["cforest"])
         output_dir = output_dir.joinpath(self.runID)
 

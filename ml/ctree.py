@@ -15,7 +15,6 @@ import pandas as pd
 from rpy2 import robjects
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import importr
-from sklearn import metrics
 
 from data import Data
 from ml.model import Model
@@ -100,16 +99,9 @@ class Ctree(Model):
         return pred
 
     def assess(self, ytrue, ypredict, ypredict_probs):
-        # metrics
-        aucroc = (
-            metrics.roc_auc_score(ytrue, ypredict_probs, multi_class="ovr"),
-        )
-        mcc = metrics.matthews_corrcoef(ytrue, ypredict)
-
-        print(f"AUC-ROC: {aucroc[0]}\nMCC: {mcc}")
+        _, _ = super().assess(ytrue, ypredict, ypredict_probs)
 
         # clustermap
-
         output_dir = Path(self.data.config["output"]["locations"]["ctree"])
         output_dir = output_dir.joinpath(self.runID)
 

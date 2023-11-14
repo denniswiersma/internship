@@ -24,6 +24,7 @@ import matplotlib.patches as mpatches
 import pandas as pd
 import seaborn as sns
 from rpy2 import robjects
+from sklearn import metrics
 
 
 # CLASSES
@@ -48,7 +49,17 @@ class Model(ABC):
 
     @abstractmethod
     def assess(self, ytrue, ypredict, ypredict_probs):
-        ...
+        # metrics
+        # handle all metrics centrally to allow for easy additions
+        aucroc = (
+            metrics.roc_auc_score(ytrue, ypredict_probs, multi_class="ovr"),
+        )
+        mcc = metrics.matthews_corrcoef(ytrue, ypredict)
+        print(f"AUC-ROC: {aucroc}\nMCC: {mcc}")
+
+        # clustermap code goes here
+
+        return aucroc[0], mcc
 
     def _clustermap(
         self, ypredict_probs: list[list], ytest: pd.Series, path: Path
