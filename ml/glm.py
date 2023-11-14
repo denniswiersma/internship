@@ -24,6 +24,12 @@ from ml.model import Model
 
 # CLASSES
 class GLM(Model):
+    def plot(self):
+        pass
+
+    def save(self):
+        pass
+
     def __init__(self, data: Data):
         """
         Initialises the GLM class by setting the mixing matrix, tumor types,
@@ -191,9 +197,10 @@ class GLM(Model):
         :param ypredict_probs: The predicted probabilities.
         :param ytest: The true response for the testing data.
         """
+        robjects.r.assign("response", ytest)  # type: ignore
         # convert the predictions to a dataframe with the correct column names
         predictions = pd.DataFrame(
-            ypredict_probs, columns=robjects.r("names(coef(model))")  # type: ignore
+            ypredict_probs, columns=robjects.r("levels(as.factor(response))")  # type: ignore
         )
 
         # list all the unique tumor types found in the dataset
