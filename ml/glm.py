@@ -6,24 +6,22 @@
 # METADATA
 
 # IMPORTS
+from pathlib import Path
 from typing import Tuple
 
-import matplotlib.colors as colors
-import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from rpy2 import robjects
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import importr
-from sklearn import metrics
-from sklearn.metrics._plot.confusion_matrix import ConfusionMatrixDisplay
 
 from data import Data
+from ml.model import Model
 
 
 # CLASSES
-class GLM:
+class GLM(Model):
     def __init__(self, data: Data):
         """
         Initialises the GLM class by setting the mixing matrix, tumor types,
@@ -32,8 +30,7 @@ class GLM:
 
         :param data: The instance of the Data class to use.
         """
-        self.mixing_matrix: pd.DataFrame = data.mixing_matrix
-        self.tumor_types: pd.DataFrame = data.tumor_types
+        self.data: Data = data
         self.mm_with_tt: pd.DataFrame = data.get_mm_with_tt()
 
     def plot_label_distribution(
@@ -143,9 +140,11 @@ class GLM:
         )
 
         print(fit_optimised)
-        return fit_optimised
 
-    def predict(self, model, newx: pd.DataFrame, type: str):
+        self.runID = self._generate_runID()
+        self.fitted_model = fit_optimised
+
+    def predict(self, newx: pd.DataFrame, type: str):
         """
         Predicts the response for the given covariates using the given model by
         utilising the predict function in R.
@@ -166,7 +165,7 @@ class GLM:
         robjects.r("newx <- data.matrix(newx)")
 
         # assign model and type to variables in R environment
-        robjects.r.assign("model", model)  # type: ignore
+        robjects.r.assign("model", self.fitted_model)  # type: ignore
         robjects.r.assign("type", type)  # type: ignore
 
         # run predict and return the result
@@ -175,117 +174,42 @@ class GLM:
     def assess(
         self, ytrue: pd.Series, ypredict: list, ypredict_probs: list[list]
     ):
-        plt.figure(figsize=(15, 15))
+        _, _ = super().assess(ytrue, ypredict, ypredict_probs)
 
-        ConfusionMatrixDisplay.from_predictions(
-            ytrue,
-            ypredict,
-            normalize="true",
-            cmap="binary",
-            xticks_rotation="vertical",
-        )
-        plt.show()
+        # clustermap
+        output_dir = Path(self.data.config["output"]["locations"]["glmnet"])
+        output_dir = output_dir.joinpath(self.runID)
 
-        # print the classification report containing precision, recall, and f1
-        print(metrics.classification_report(ytrue, ypredict))
+        file_name = "clustermap"
+        output_dir = output_dir.joinpath(file_name)
 
-        # print the AUC ROC
-        print(
-            "AUC ROC:",
-            metrics.roc_auc_score(ytrue, ypredict_probs, multi_class="ovr"),
-        )
-        # print the MCC
-        print("MCC:", metrics.matthews_corrcoef(ytrue, ypredict))
+        self._clustermap(ypredict_probs, ytrue, output_dir)
 
-    def assess_cm(self, ypredict_probs: list[list], ytest: pd.Series):
-        """
-        Plots a clustermap of the predictions to visualise the probability of
-        each tumor type for each sample.
+    def plot(self):
+        output_dir = Path(self.data.config["output"]["locations"]["glmnet"])
+        output_dir = output_dir.joinpath(self.runID)
 
-        :param model: The model used to make the predictions.
-        :param ypredict_probs: The predicted probabilities.
-        :param ytest: The true response for the testing data.
-        """
-        # convert the predictions to a dataframe with the correct column names
-        predictions = pd.DataFrame(
-            ypredict_probs, columns=robjects.r("names(coef(model))")  # type: ignore
-        )
+        file_name = "glmnet"
+        output_dir = output_dir.joinpath(file_name)
+        output_dir = output_dir.with_suffix(".png")
+        output_dir.parent.mkdir(parents=True, exist_ok=True)
 
-        # list all the unique tumor types found in the dataset
-        unique_tt = ytest.unique()
+        grdevices = importr("grDevices")
+        grdevices.png(output_dir.as_posix(), width=512, height=512)
 
-        # pair each tumor type with a colour
-        lut = dict(
-            zip(
-                unique_tt,
-                sns.color_palette("hls", len(unique_tt)),
-            )
-        )
+        robjects.r.plot(self.fitted_model, xvar="lambda", label=True)  # type: ignore
 
-        # map each colour to its tumor type in the origional dataframe
-        # this will result in a dataframe of coloyrs where the indexes match
-        # with the indexes of the tumor types in the origional dataframe
-        row_colours = ytest.map(lut)
+        grdevices.dev_off()
+        print(f"Plot saved to {output_dir}")
 
-        # make patchesfor the tumor type legend: colour and tumor type label
-        legend_TN = [
-            mpatches.Patch(facecolor=colour, label=label, edgecolor="black")
-            for label, colour in lut.items()
-        ]
+    def save(self):
+        output_dir = Path(self.data.config["output"]["locations"]["glmnet"])
+        output_dir = output_dir.joinpath(self.runID)
 
-        legend_TN.append(
-            mpatches.Patch(
-                facecolor="white",
-                label="Missing cancer type",
-                edgecolor="black",
-            )
-        )
+        file_name = "glmnet"
+        output_dir = output_dir.joinpath(file_name)
 
-        # find the lowest value in the dataframe
-        # used for the lower limit of the colourmap
-        a, b = predictions.stack().idxmin()  # type: ignore
-        vmin = predictions.loc[[a], [b]].values
-
-        # find the highest value in the dataframe
-        # used for the upper limit of the colourmap
-        a, b = predictions.stack().idxmax()  # type: ignore
-        vmax = predictions.loc[[a], [b]].values
-
-        # normalise with a center of zero
-        norm = colors.TwoSlopeNorm(vmin=vmin, vcenter=0.5, vmax=vmax)
-
-        # create the clustermap
-        cm = sns.clustermap(
-            predictions.reset_index(
-                drop=True
-            ),  # resetting the index needed to get the tumor type bar to colour
-            method="ward",
-            metric="euclidean",
-            row_colors=row_colours.reset_index(
-                drop=True
-            ),  # adds tumor type bar
-            xticklabels=True,
-            yticklabels=False,
-            cbar_kws={"label": "Probability"},  # adds label to cbar
-            cmap="seismic",
-            figsize=(10, 20),
-            vmin=vmin,
-            vmax=vmax,
-            norm=norm,
-        )
-
-        # set x and y labels
-        cm.ax_heatmap.set(xlabel="Predicted label", ylabel="Samples")
-
-        # configure tumor type legend
-        leg = cm.ax_heatmap.legend(
-            loc="center right",
-            bbox_to_anchor=(1.4, 0.8),
-            handles=legend_TN,
-            frameon=True,
-        )
-        leg.set_title(title="Tumor type", prop={"size": 10})
-        plt.show()
+        super().save(output_dir)
 
 
 # FUNCTIONS
