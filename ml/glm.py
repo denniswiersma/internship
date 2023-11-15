@@ -22,12 +22,6 @@ from ml.model import Model
 
 # CLASSES
 class GLM(Model):
-    def plot(self):
-        pass
-
-    def save(self):
-        pass
-
     def __init__(self, data: Data):
         """
         Initialises the GLM class by setting the mixing matrix, tumor types,
@@ -146,9 +140,11 @@ class GLM(Model):
         )
 
         print(fit_optimised)
-        return fit_optimised
 
-    def predict(self, model, newx: pd.DataFrame, type: str):
+        self.runID = self._generate_runID()
+        self.fitted_model = fit_optimised
+
+    def predict(self, newx: pd.DataFrame, type: str):
         """
         Predicts the response for the given covariates using the given model by
         utilising the predict function in R.
@@ -169,7 +165,7 @@ class GLM(Model):
         robjects.r("newx <- data.matrix(newx)")
 
         # assign model and type to variables in R environment
-        robjects.r.assign("model", model)  # type: ignore
+        robjects.r.assign("model", self.fitted_model)  # type: ignore
         robjects.r.assign("type", type)  # type: ignore
 
         # run predict and return the result
@@ -181,13 +177,39 @@ class GLM(Model):
         _, _ = super().assess(ytrue, ypredict, ypredict_probs)
 
         # clustermap
-        output_dir = Path(self.data.config["output"]["locations"]["ctree"])
+        output_dir = Path(self.data.config["output"]["locations"]["glmnet"])
         output_dir = output_dir.joinpath(self.runID)
 
         file_name = "clustermap"
         output_dir = output_dir.joinpath(file_name)
 
         self._clustermap(ypredict_probs, ytrue, output_dir)
+
+    def plot(self):
+        output_dir = Path(self.data.config["output"]["locations"]["glmnet"])
+        output_dir = output_dir.joinpath(self.runID)
+
+        file_name = "glmnet"
+        output_dir = output_dir.joinpath(file_name)
+        output_dir = output_dir.with_suffix(".png")
+        output_dir.parent.mkdir(parents=True, exist_ok=True)
+
+        grdevices = importr("grDevices")
+        grdevices.png(output_dir.as_posix(), width=512, height=512)
+
+        robjects.r.plot(self.fitted_model, xvar="lambda", label=True)  # type: ignore
+
+        grdevices.dev_off()
+        print(f"Plot saved to {output_dir}")
+
+    def save(self):
+        output_dir = Path(self.data.config["output"]["locations"]["glmnet"])
+        output_dir = output_dir.joinpath(self.runID)
+
+        file_name = "glmnet"
+        output_dir = output_dir.joinpath(file_name)
+
+        super().save(output_dir)
 
 
 # FUNCTIONS
