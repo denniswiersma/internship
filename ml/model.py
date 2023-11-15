@@ -55,7 +55,12 @@ class Model(ABC):
             metrics.roc_auc_score(ytrue, ypredict_probs, multi_class="ovr"),
         )
         mcc = metrics.matthews_corrcoef(ytrue, ypredict)
-        print(f"AUC-ROC: {aucroc[0]}\nMCC: {mcc}")
+        ari = metrics.adjusted_rand_score(ytrue, ypredict)
+        topk = metrics.top_k_accuracy_score(ytrue, ypredict_probs, k=3)
+
+        print(
+            f"AUC-ROC: {aucroc[0]}\nMCC: {mcc}\nARI: {ari}\ntop-3 accuracy: {topk}"
+        )
 
         # clustermap code goes here
 
