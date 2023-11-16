@@ -42,7 +42,27 @@ Make sure the data you provide follows this format. See example below.
 
 Output directories will be divided into subdirectories named by a run ID made up of a datetime stamp and a randomly generated two byte long hexadecimal string.
 A new run ID is generated for each fit, and thus, any output generated will be saved to its respective directory.
-Which data is or isn't saved depends on which functions are called. See details of example notebooks below.
+Which data is or isn't saved depends on which functions are called. As an example, this simplified code:
+
+```python
+ctree = Ctree()
+
+ctree.fit()
+
+ctree.plot()
+ctree.save()
+```
+
+Would result in the following output directory structure:
+
+```
+output
+├── ctree
+│   └── 20230101120000_7ca166 <- runID: 2023-01-01 12:00:00 + random string
+│       ├── ctree-testtype=Bonferroni-alpha=0_01-maxdepth=inf-minsplit=20-minbucket=7.pkl <- saved model object
+│       └── ctree-testtype=Bonferroni-alpha=0_01-maxdepth=inf-minsplit=20-minbucket=7.png <- plot
+```
+
 
 ### Recommended usage
 Code contained in the `/ml/` directory may be viewed as library code, and can therefore be called by user made scripts.
