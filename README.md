@@ -49,8 +49,8 @@ ctree = Ctree()
 
 ctree.fit()
 
-ctree.plot()
 ctree.save()
+ctree.plot()
 ```
 
 Would result in the following output directory structure:
