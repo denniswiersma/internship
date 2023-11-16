@@ -59,8 +59,8 @@ Would result in the following output directory structure:
 output
 ├── ctree
 │   └── 20230101120000_7ca166 <- runID: 2023-01-01 12:00:00 + random string
-│       ├── ctree-testtype=Bonferroni-alpha=0_01-maxdepth=inf-minsplit=20-minbucket=7.pkl <- saved model object
-│       └── ctree-testtype=Bonferroni-alpha=0_01-maxdepth=inf-minsplit=20-minbucket=7.png <- plot
+│       ├── ctree.pkl <- saved model object
+│       └── ctree.png <- plot
 ```
 
 
