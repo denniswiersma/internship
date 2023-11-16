@@ -1,5 +1,6 @@
 # Internship
 NOTE: The contents of this repository have note yet been licensed.
+
 This repository contains code and writings for my internship project at the Computational Transcriptomics research group at [University Medical Center Groningen](https://umcgresearch.org/).
 The project is part of the fourth (and final) year of the bachelor Bio-information technology at [Hanze University of Applied Sciences](https://www.hanze.nl/en).
 
@@ -7,7 +8,7 @@ The project is part of the fourth (and final) year of the bachelor Bio-informati
 
 [adaptation of project proposal introduction]
 
-## Usage
+## Getting started
 
 ### Acquiring code & data
 
@@ -20,12 +21,12 @@ or if you prefer an ssh based approach:
 git clone git@github.com:denniswiersma/internship.git
 ```
 
-The input data consists of a mixing matrix derived from publicly available mRNA expression profiles by the use of Consensus Independent Component analysis.
+The input data consists of a mixing matrix derived from publicly available mRNA expression profiles by using Consensus Independent Component Analysis.
 More information on this process can be found in [paper 1](https://doi.org/10.1186/s40170-021-00272-7) and [paper 2](https://doi.org/10.1038/s41467-021-21671-w).
 
 In addition to the mixing matrix, a file containing sample cancer type annotations is to be provided.
 
-### Setting configurations
+### Configuration
 To get started, make a copy of `config_template.toml` and name it `config.toml`.
 A few configurations need to be changed from their defaults while the rest is optional.
 
@@ -49,7 +50,7 @@ For analysing data, training models, and reproducing methods it is recommended t
 Please examine examples in the `/notebooks/` directory for guidance.
 
 ## Organisation
-Ideally every (top-level) folder in this repository will contain a readme file discussing its contents.
+Ideally, every (top-level) folder in this repository will contain a readme file discussing its contents.
 As this is the project's root, all top-level contents are discussed below.
 
 ### documents
@@ -63,11 +64,12 @@ Currently contains:
 
 ### eda
 Contains python scripts used in the Exploratory Data Analysis phase of the project.
-Unknown if this code currently functions as expected, since it does not utilise the data pipeline implemented later.
+It is unknown if this code currently functions as expected, since it does not utilise the current data pipeline.
 
 ### ml
 Contains an [abstract base class](https://docs.python.org/3/library/abc.html) `Model` which provides an interface and supplementary method implementations for subclasses.
 Additionally, contains implementations of `Model` for each machine learning method used in this project.
+In general, these implementations provide abstractions for the intricacies of interacting with ML libraries implemented in Python or R.
 
 ### notebooks
 Contains a separate Jupyter Notebook for each `Model` implementation used to perform the analyses for the given model.
@@ -75,7 +77,7 @@ See [Recommended usage](https://github.com/denniswiersma/internship#recommended-
 
 ### config_template.toml
 Contains a template for `config.toml`.
-See [Setting configurations](https://github.com/denniswiersma/internship#setting-configurations).
+See [Configuration](https://github.com/denniswiersma/internship#configuration).
 
 ### data.py
 Contains code for loading and manipulating the loaded data (e.g., subset the data, or split it into training, testing, and validation sets).
