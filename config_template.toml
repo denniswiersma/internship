@@ -16,6 +16,7 @@ response = "[RESPONSE VARIABLE COLUMN]"
 [output.locations] # paths are to be defined relative to the project root
 glmnet = "output/glmnet/"
 ctree = "output/ctree/"
+cforest = "output/cforest/"
 
 [execution]
 cores = 8 # number of cores to use where multiprocessing is applicable
