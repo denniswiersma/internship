@@ -26,14 +26,38 @@ More information on this process can be found in [paper 1](https://doi.org/10.11
 
 In addition to the mixing matrix, a file containing sample cancer type annotations is to be provided.
 
-### Configuration
-To get started, make a copy of `config_template.toml` and name it `config.toml`.
-A few configurations need to be changed from their defaults while the rest is optional.
-
 Please note that the program will try to load the data into data frames with column names.
 Make sure the data you provide follows this format. See example below.
 
 [Example of mixing matrix data]
+
+### Dependencies
+This project has dependencies for both Python and R.
+The latter of these, unfortunately, requires some manual installation.
+
+#### Python
+[Poetry](https://python-poetry.org/) is a python packaging and dependency management tool for python.
+The easiest way to install all the required dependencies is to first install Poetry by following [their installation instructions](https://python-poetry.org/docs/#installation).
+Once this is done, navigate to this project and run the following command:
+```bash
+poetry install
+```
+
+If you wish to (manually) install dependencies into your own environment, please refer to the `pyproject.toml` file.
+You'll find all required Python dependencies under `[tool.poetry.dependencies]`.
+
+#### R
+Since, internally, an R environment is used to run certain machine learning algorithms, some R dependencies need to be installed.
+If you have a [working R installation](https://www.r-project.org/) you can open an interactive R console in your terminal by running the `R` command.
+Run the following command in this console to install all required R dependencies:
+```R
+install.packages(c("partykit", "glmnet", "grDevices"))
+```
+
+### Configuration
+To get started configuring, make a copy of `config_template.toml` and name it `config.toml`.
+A few configurations need to be changed from their defaults while the rest is optional.
+
 
 - `data.locations` | Paths to files containing the mixing matrix and cancer type annotations.
 - `data.columns` | Names of the columns of the mixing matrix and annotations.
@@ -65,9 +89,9 @@ output
 
 
 ### Recommended usage
-Code contained in the `/ml/` directory may be viewed as library code, and can therefore be called by user made scripts.
+Code contained in the `src/ml/` directory may be viewed as library code, and can therefore be called by user made scripts.
 For analysing data, training models, and reproducing methods it is recommended to use [Jupyter Notebooks](https://docs.jupyter.org/en/latest/) and call the code from there.
-Please examine examples in the `/notebooks/` directory for guidance.
+Please examine examples in the `notebooks/` directory for guidance.
 
 ## Organisation
 Ideally, every (top-level) folder in this repository will contain a readme file discussing its contents.
@@ -84,20 +108,15 @@ Currently contains:
 
 ### eda
 Contains python scripts used in the Exploratory Data Analysis phase of the project.
-It is unknown if this code currently functions as expected, since it does not utilise the current data pipeline.
-
-### ml
-Contains an [abstract base class](https://docs.python.org/3/library/abc.html) `Model` which provides an interface and supplementary method implementations for subclasses.
-Additionally, contains implementations of `Model` for each machine learning method used in this project.
-In general, these implementations provide abstractions for the intricacies of interacting with ML libraries implemented in Python or R.
+It is unknown if this code functions as expected, since it does not utilise the current data pipeline.
 
 ### notebooks
 Contains a separate Jupyter Notebook for each `Model` implementation used to perform the analyses for the given model.
 See [Recommended usage](https://github.com/denniswiersma/internship#recommended-usage).
 
+### src
+Contains all source code that can be used for your own endeavours.
+
 ### config_template.toml
 Contains a template for `config.toml`.
 See [Configuration](https://github.com/denniswiersma/internship#configuration).
-
-### data.py
-Contains code for loading and manipulating the loaded data (e.g., subset the data, or split it into training, testing, and validation sets).
