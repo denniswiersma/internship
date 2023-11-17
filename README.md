@@ -36,7 +36,7 @@ This project has dependencies for both Python and R.
 The latter of these, unfortunately, requires some manual installation.
 
 #### Python
-[Poetry](https://python-poetry.org/) is a python packaging and dependency management tool for python.
+[Poetry](https://python-poetry.org/) is a packaging and dependency management tool for Python.
 The easiest way to install all the required dependencies is to first install Poetry by following [their installation instructions](https://python-poetry.org/docs/#installation).
 Once this is done, navigate to this project and run the following command:
 ```bash
