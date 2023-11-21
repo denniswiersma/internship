@@ -67,8 +67,8 @@ class Cforest(Model):
         ctree_control_func = robjects.r["ctree_control"]
 
         self.lm.add_fit_buffer("building forest...")
-        self.lm.add_fit_buffer(f"number of trees: {ntree}")
-        self.lm.add_fit_buffer(f"number of cores: {cores}")
+        self.lm.add_fit_buffer(f"number of trees = {ntree}")
+        self.lm.add_fit_buffer(f"number of cores = {cores}")
         self.lm.add_fit_buffer(ctree_control.__str__())
         # define control options
         control = ctree_control_func(**dataclasses.asdict(ctree_control))  # type: ignore
@@ -113,13 +113,7 @@ class Cforest(Model):
 
         # clustermap
         output_dir = Path(self.data.config["output"]["locations"]["cforest"])
-        output_dir = output_dir.joinpath(self.runID)
-
-        file_name = "clustermap"
-        for key, value in dataclasses.asdict(self.ctree_control).items():
-            file_name += f"-{key}={str(value).replace('.', '_')}"
-
-        output_dir = output_dir.joinpath(file_name)
+        output_dir = output_dir.joinpath(self.runID, "clustermap")
 
         self._clustermap(ypredict_probs, ytrue, output_dir)
 
@@ -130,15 +124,7 @@ class Cforest(Model):
         # fetch the output dir for cforest
         output_dir = Path(self.data.config["output"]["locations"]["cforest"])
         # append the runID as a subfolder
-        output_dir = output_dir.joinpath(self.runID)
-
-        # construct a file name describing the tree's settings
-        file_name = "cforest"
-        for key, value in dataclasses.asdict(self.ctree_control).items():
-            file_name += f"-{key}={str(value).replace('.', '_')}"
-
-        # append the file name to the output dir
-        output_dir = output_dir.joinpath(file_name)
+        output_dir = output_dir.joinpath(self.runID, "cforest_model")
 
         # save the model as a pickle file
         super().save(path=output_dir)

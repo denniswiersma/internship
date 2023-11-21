@@ -128,13 +128,7 @@ class Ctree(Model):
 
         # clustermap
         output_dir = Path(self.data.config["output"]["locations"]["ctree"])
-        output_dir = output_dir.joinpath(self.runID)
-
-        file_name = "clustermap"
-        for key, value in dataclasses.asdict(self.ctree_control).items():
-            file_name += f"-{key}={str(value).replace('.', '_')}"
-
-        output_dir = output_dir.joinpath(file_name)
+        output_dir = output_dir.joinpath(self.runID, "clustermap")
 
         self._clustermap(ypredict_probs, ytrue, output_dir)
 
@@ -142,15 +136,8 @@ class Ctree(Model):
         # fetch the output dir for ctree
         output_dir = Path(self.data.config["output"]["locations"]["ctree"])
         # append the runID as a subfolder
-        output_dir = output_dir.joinpath(self.runID)
+        output_dir = output_dir.joinpath(self.runID, "ctree")
 
-        # construct a file name describing the tree's settings
-        file_name = "ctree"
-        for key, value in dataclasses.asdict(self.ctree_control).items():
-            file_name += f"-{key}={str(value).replace('.', '_')}"
-
-        # append the file name to the output dir
-        output_dir = output_dir.joinpath(file_name)
         # append file extension
         output_dir = output_dir.with_suffix(".png")
         output_dir.parent.mkdir(parents=True, exist_ok=True)
@@ -180,15 +167,7 @@ class Ctree(Model):
         # fetch the output dir for ctree
         output_dir = Path(self.data.config["output"]["locations"]["ctree"])
         # append the runID as a subfolder
-        output_dir = output_dir.joinpath(self.runID)
-
-        # construct a file name describing the tree's settings
-        file_name = "ctree"
-        for key, value in dataclasses.asdict(self.ctree_control).items():
-            file_name += f"-{key}={str(value).replace('.', '_')}"
-
-        # append the file name to the output dir
-        output_dir = output_dir.joinpath(file_name)
+        output_dir = output_dir.joinpath(self.runID, "ctree_model")
 
         # save the model as a pickle file
         super().save(path=output_dir)

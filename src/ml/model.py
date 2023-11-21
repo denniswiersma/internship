@@ -62,7 +62,7 @@ class Model(ABC):
         topk = metrics.top_k_accuracy_score(ytrue, ypredict_probs, k=3)
 
         self.lm.add_fit_buffer(
-            f"Performance metrics:\nAUC-ROC:\t\t{aucroc[0]}\nMCC:\t\t\t{mcc}\nARI:\t\t\t{ari}\ntop-3 accuracy:\t{topk}"
+            f"Performance metrics\nAUC-ROC =\t\t{aucroc[0]}\nMCC =\t\t\t{mcc}\nARI =\t\t\t{ari}\ntop-3 accuracy =\t{topk}"
         )
 
         # clustermap code goes here
