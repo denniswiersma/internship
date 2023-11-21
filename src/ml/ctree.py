@@ -8,6 +8,7 @@
 # IMPORTS
 import dataclasses
 import math
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -16,8 +17,9 @@ from rpy2 import robjects
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import importr
 
-from data import Data
-from ml.model import Model
+from src.data import Data
+from src.log_manager import LogManager
+from src.ml.model import Model
 
 
 # CLASSES
@@ -25,6 +27,7 @@ class Ctree(Model):
     def __init__(self, data: Data):
         self.mm_with_tt: pd.DataFrame = data.get_mm_with_tt()
         self.data: Data = data
+        self.lm = LogManager()
 
     def _build_formula(
         self,
@@ -53,8 +56,23 @@ class Ctree(Model):
         minbucket: int = 7  # minimum sum of weights in a terminal node
 
     def fit(self, train, ctree_control: CtreeControl):
+        self.runID = self._generate_runID()
+
+        # set up a path for the log file
+        output_dir = Path(
+            self.data.config["output"]["locations"]["ctree"]
+        ).joinpath(self.runID, "ctree")
+        # add a file handler to the logger
+        self.lm.add_file_handler(path=output_dir)
+
+        # flush any buffers to file
+        # clears only the fit buffer
+        if any([self.lm.load_buffer, self.lm.prep_buffer, self.lm.fit_buffer]):
+            self.lm.flush_buffers_to_file(path=output_dir)
+
         self.ctree_control = ctree_control
 
+        # convert data to R object
         pandas2ri.activate()
         train["response"] = train["response"].astype("category")
         r_train = pandas2ri.py2rpy(train)
@@ -65,18 +83,25 @@ class Ctree(Model):
         ctree = robjects.r["ctree"]
         ctree_control_func = robjects.r["ctree_control"]
 
-        print("building tree...")
+        # add message to log
+        self.lm.add_fit_buffer("Building ctree model...")
+        self.lm.add_fit_buffer(ctree_control.__str__())
+
         # define control options
         control = ctree_control_func(**dataclasses.asdict(ctree_control))  # type: ignore
 
         # build the tree
+        start = time.perf_counter()
         self.fitted_model = ctree(  # type: ignore
             formula=robjects.r.formula("response ~ `.`"),  # type: ignore
             data=r_train,
             control=control,
         )
+        end = time.perf_counter()
 
-        self.runID = self._generate_runID()
+        elapsed_min = (end - start) / 60
+
+        self.lm.add_fit_buffer(f"Model built in {elapsed_min:0.2f} minutes")
 
     def predict(self, newx, type: str):
         # activate pandas to R converter
@@ -103,13 +128,7 @@ class Ctree(Model):
 
         # clustermap
         output_dir = Path(self.data.config["output"]["locations"]["ctree"])
-        output_dir = output_dir.joinpath(self.runID)
-
-        file_name = "clustermap"
-        for key, value in dataclasses.asdict(self.ctree_control).items():
-            file_name += f"-{key}={str(value).replace('.', '_')}"
-
-        output_dir = output_dir.joinpath(file_name)
+        output_dir = output_dir.joinpath(self.runID, "clustermap")
 
         self._clustermap(ypredict_probs, ytrue, output_dir)
 
@@ -117,15 +136,8 @@ class Ctree(Model):
         # fetch the output dir for ctree
         output_dir = Path(self.data.config["output"]["locations"]["ctree"])
         # append the runID as a subfolder
-        output_dir = output_dir.joinpath(self.runID)
+        output_dir = output_dir.joinpath(self.runID, "ctree")
 
-        # construct a file name describing the tree's settings
-        file_name = "ctree"
-        for key, value in dataclasses.asdict(self.ctree_control).items():
-            file_name += f"-{key}={str(value).replace('.', '_')}"
-
-        # append the file name to the output dir
-        output_dir = output_dir.joinpath(file_name)
         # append file extension
         output_dir = output_dir.with_suffix(".png")
         output_dir.parent.mkdir(parents=True, exist_ok=True)
@@ -149,21 +161,13 @@ class Ctree(Model):
 
         # disable graphics device
         grdevices.dev_off()
-        print(f"Plot saved to {output_dir}")
+        self.lm.add_fit_buffer(f"Plot saved to {output_dir}")
 
     def save(self):
         # fetch the output dir for ctree
         output_dir = Path(self.data.config["output"]["locations"]["ctree"])
         # append the runID as a subfolder
-        output_dir = output_dir.joinpath(self.runID)
-
-        # construct a file name describing the tree's settings
-        file_name = "ctree"
-        for key, value in dataclasses.asdict(self.ctree_control).items():
-            file_name += f"-{key}={str(value).replace('.', '_')}"
-
-        # append the file name to the output dir
-        output_dir = output_dir.joinpath(file_name)
+        output_dir = output_dir.joinpath(self.runID, "ctree_model")
 
         # save the model as a pickle file
         super().save(path=output_dir)

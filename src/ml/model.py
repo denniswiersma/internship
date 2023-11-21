@@ -26,11 +26,14 @@ import seaborn as sns
 from rpy2 import robjects
 from sklearn import metrics
 
+from src.log_manager import LogManager
+
 
 # CLASSES
 class Model(ABC):
     @abstractmethod
     def __init__(self):
+        self.lm = LogManager()
         ...
 
     @staticmethod
@@ -58,8 +61,8 @@ class Model(ABC):
         ari = metrics.adjusted_rand_score(ytrue, ypredict)
         topk = metrics.top_k_accuracy_score(ytrue, ypredict_probs, k=3)
 
-        print(
-            f"AUC-ROC: {aucroc[0]}\nMCC: {mcc}\nARI: {ari}\ntop-3 accuracy: {topk}"
+        self.lm.add_fit_buffer(
+            f"Performance metrics\nAUC-ROC =\t\t{aucroc[0]}\nMCC =\t\t\t{mcc}\nARI =\t\t\t{ari}\ntop-3 accuracy =\t{topk}"
         )
 
         # clustermap code goes here
@@ -162,7 +165,7 @@ class Model(ABC):
         path.parent.mkdir(parents=True, exist_ok=True)
 
         cm.savefig(path, bbox_inches="tight")
-        print(f"Clustermap saved to {path}")
+        self.lm.add_fit_buffer(f"Clustermap saved to {path}")
 
     @abstractmethod
     def plot(self):
@@ -175,7 +178,7 @@ class Model(ABC):
 
         with open(path, "wb") as file:
             pkl.dump(self.fitted_model, file=file)
-        print(f"Model saved to {path}")
+        self.lm.add_fit_buffer(f"Model saved to {path}")
 
 
 # FUNCTIONS

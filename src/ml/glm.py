@@ -16,8 +16,8 @@ from rpy2 import robjects
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import importr
 
-from data import Data
-from ml.model import Model
+from src.data import Data
+from src.ml.model import Model
 
 
 # CLASSES
