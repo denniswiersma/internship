@@ -83,8 +83,9 @@ Would result in the following output directory structure:
 output
 ├── ctree
 │   └── 20230101120000_7ca166 <- runID: 2023-01-01 12:00:00 + random string
-│       ├── ctree.pkl <- saved model object
-│       └── ctree.png <- plot
+│       ├── ctree_model.pkl <- saved model object
+│       ├── ctree.png <- plot
+│       └── ctree.log <- log file
 ```
 
 
