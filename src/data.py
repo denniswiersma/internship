@@ -7,12 +7,15 @@
 
 # IMPORTS
 import random
+import time
 from typing import Tuple, cast
 
 import pandas as pd
 import rpy2.robjects as ro
 from rpy2.robjects import pandas2ri
 from sklearn.model_selection import train_test_split
+
+from src.log_manager import LogManager
 
 # CLASSES
 
@@ -25,6 +28,11 @@ class Data:
         :param data_folder: Path to the folder containing the data.
         """
         self.config = config
+        # as the data class is the default entry point, the log manager is
+        # initialised here. The log manager is a singleton, so it will only be
+        # initialised once after which it will be reused when the class is
+        # instantiated again.
+        self.lm = LogManager()
 
         self.read_data()
 
@@ -36,8 +44,9 @@ class Data:
 
         :param data_folder: Path to the folder containing the data.
         """
-        print("Reading data...")
+        self.lm.add_load_buffer("Loading data...")
 
+        start = time.perf_counter()
         # read tumor type annotations
         with open(self.config["data"]["locations"]["tumor_types"]) as file:
             self.tumor_types: pd.DataFrame = pd.read_csv(
@@ -74,6 +83,9 @@ class Data:
                 )
                 .set_index("samples")
             )
+        end = time.perf_counter()
+        elapsed_sec = end - start
+        self.lm.add_load_buffer(f"Data loaded in {elapsed_sec:0.4f} seconds")
 
     def filter_tt(self, min_n: int) -> None:
         """
@@ -136,7 +148,7 @@ class Data:
         """
         mm_with_tt = self.get_mm_with_tt()
 
-        print("making R dataframe...")
+        self.lm.add_load_buffer("Making R dataframe...")
         pandas2ri.activate()
         mm_with_tt["response"] = mm_with_tt["response"].astype("category")
         r_mm_with_tt = pandas2ri.py2rpy(mm_with_tt)
@@ -164,6 +176,9 @@ class Data:
         the response variable column.
         :return: Three pandas dataframes in order of train, test, validate.
         """
+        self.lm.add_prep_buffer(
+            f"received splits\ntrain =\t{train_size}\ntest =\t{test_size}\nval =\t{val_size}"
+        )
         size_list = [train_size, test_size, val_size]
         for i, size in enumerate(size_list):
             if isinstance(size, int):
@@ -191,11 +206,15 @@ class Data:
             random_state=seed,
         )
 
-        return (
-            cast(pd.DataFrame, train_df),
-            cast(pd.DataFrame, test_df),
-            cast(pd.DataFrame, val_df),
+        train_df = cast(pd.DataFrame, train_df)
+        test_df = cast(pd.DataFrame, test_df)
+        val_df = cast(pd.DataFrame, val_df)
+
+        self.lm.add_prep_buffer(
+            f"split sizes\ntrain =\t{train_df.shape}\ntest =\t{test_df.shape}\nval =\t{val_df.shape}"
         )
+
+        return train_df, test_df, val_df
 
     def split_xy(self, data: pd.DataFrame):
         # drop the response column to get just the features

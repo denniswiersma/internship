@@ -8,6 +8,7 @@
 # IMPORTS
 import dataclasses
 import math
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -17,6 +18,7 @@ from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import importr
 
 from src.data import Data
+from src.log_manager import LogManager
 from src.ml.model import Model
 
 
@@ -25,6 +27,7 @@ class Cforest(Model):
     def __init__(self, data: Data):
         self.mm_with_tt: pd.DataFrame = data.get_mm_with_tt()
         self.data: Data = data
+        self.lm = LogManager()
 
     @dataclass
     class CtreeControl:
@@ -41,6 +44,16 @@ class Cforest(Model):
         ntree: int = 500,
         cores: int = 1,
     ):
+        self.runID = self._generate_runID()
+
+        output_dir = Path(
+            self.data.config["output"]["locations"]["cforest"]
+        ).joinpath(self.runID, "cforest")
+        self.lm.add_file_handler(path=output_dir)
+
+        if any([self.lm.load_buffer, self.lm.prep_buffer, self.lm.fit_buffer]):
+            self.lm.flush_buffers_to_file(path=output_dir)
+
         self.ctree_control = ctree_control
 
         pandas2ri.activate()
@@ -53,11 +66,15 @@ class Cforest(Model):
         cforest = robjects.r["cforest"]
         ctree_control_func = robjects.r["ctree_control"]
 
-        print("building forest...")
+        self.lm.add_fit_buffer("building forest...")
+        self.lm.add_fit_buffer(f"number of trees: {ntree}")
+        self.lm.add_fit_buffer(f"number of cores: {cores}")
+        self.lm.add_fit_buffer(ctree_control.__str__())
         # define control options
         control = ctree_control_func(**dataclasses.asdict(ctree_control))  # type: ignore
 
         # build the tree
+        start = time.perf_counter()
         self.fitted_model = cforest(  # type: ignore
             formula=robjects.r.formula("response ~ `.`"),  # type: ignore
             data=r_train,
@@ -65,8 +82,10 @@ class Cforest(Model):
             ntree=ntree,
             cores=cores,
         )
+        end = time.perf_counter()
 
-        self.runID = self._generate_runID()
+        elapsed_min = (end - start) / 60
+        self.lm.add_fit_buffer(f"forst built in {elapsed_min:0.2f} minutes")
 
     def predict(self, newx, type: str):
         # activate pandas to R converter
@@ -105,7 +124,7 @@ class Cforest(Model):
         self._clustermap(ypredict_probs, ytrue, output_dir)
 
     def plot(self):
-        raise NotImplementedError("How do you expect me to plot a forest?")
+        raise NotImplementedError("No plot available for cforest")
 
     def save(self):
         # fetch the output dir for cforest
