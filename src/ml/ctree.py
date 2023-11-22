@@ -123,12 +123,12 @@ class Ctree(Model):
             pred = robjects.r("type.convert(pred, as.is=TRUE)")  # type: ignore
         return pred
 
-    def assess(self, ytrue, ypredict, ypredict_probs):
+    def assess(self, ytrue, ypredict, ypredict_probs, name: str = "clustermap"):
         _, _ = super().assess(ytrue, ypredict, ypredict_probs)
 
         # clustermap
         output_dir = Path(self.data.config["output"]["locations"]["ctree"])
-        output_dir = output_dir.joinpath(self.runID, "clustermap")
+        output_dir = output_dir.joinpath(self.runID, name)
 
         self._clustermap(ypredict_probs, ytrue, output_dir)
 
