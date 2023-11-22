@@ -74,8 +74,13 @@ class Ctree(Model):
 
         # convert data to R object
         pandas2ri.activate()
-        train["response"] = train["response"].astype("category")
-        r_train = pandas2ri.py2rpy(train)
+        # a copy of the training set is made to avoid changing the original
+        # dataframe. This is necessary if one wants to predict and assess on
+        # the training set in addition to the test/val set in order to compare
+        # their results.
+        train_copy = train.copy()
+        train_copy["response"] = train_copy["response"].astype("category")
+        r_train = pandas2ri.py2rpy(train_copy)
         robjects.r.assign("train", r_train)  # type: ignore
 
         # import partykit and make objects
