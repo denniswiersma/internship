@@ -85,7 +85,7 @@ class Cforest(Model):
         end = time.perf_counter()
 
         elapsed_min = (end - start) / 60
-        self.lm.add_fit_buffer(f"forst built in {elapsed_min:0.2f} minutes")
+        self.lm.add_fit_buffer(f"forest built in {elapsed_min:0.2f} minutes")
 
     def predict(self, newx, type: str):
         # activate pandas to R converter
