@@ -195,7 +195,8 @@ def main():
     parser = LogParser()
     parser.find_log_files()
     df = create_dataframe(parser)
-    print(df)
+    df.to_csv(parser.output)
+    print(f"Wrote output to {parser.output}")
 
 
 if __name__ == "__main__":
