@@ -1,7 +1,7 @@
 # Internship
 NOTE: The contents of this repository have note yet been licensed.
 
-This repository contains code and writings for my internship project at the Computational Transcriptomics research group at [University Medical Center Groningen](https://umcgresearch.org/).
+This repository contains code and writings for my internship project at the Transcriptomic Bioinformatics research group at [University Medical Center Groningen](https://umcgresearch.org/).
 The project is part of the fourth (and final) year of the bachelor Bio-information technology at [Hanze University of Applied Sciences](https://www.hanze.nl/en).
 
 ## Annotation of large-scale transcriptomic data using machine learning techniques
