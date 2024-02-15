@@ -1,0 +1,19 @@
+%&pdflatex
+\chapter{Introduction}
+
+\section{Objective}
+[Obviously, this should be much larger]
+
+In a significant amount of publicly available mRNA expression profiles (cancer type) annotations might be missing. [this probably needs a citation]
+Additionally, mistakes are easily made when annotating this data by humans. [this too]
+So, what if we were to learn a machine to do this annotation work for us?
+If the ML model is robust enough, we might even be able to detect wrongly annotated data.
+
+The model is trained on mRNA expression profile (TCGA) data.
+If it also performs well on microarray data (GPL570), [other thing] is successful at getting rid of platform and batch effects.
+% Someone else in the research group has been working on harmonising transcriptional data (e.g., mRNA expression profiles and microarray data).
+% If the model also performs well on a (harmonised) dataset from microarray data, this would show that the model is good/robust but also show that the harmonisation works well.
+
+The model isn't just trained on raw mRNA expression profiles.
+Instead, ICA is performed on the data which results in, among other things, a mixing matrix consisting of samples and their weights in different Transcriptional Components.
+More on that in data acquisition of methods.

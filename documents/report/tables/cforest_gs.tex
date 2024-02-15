@@ -1,0 +1,28 @@
+%&pdflatex
+\begin{table}[htp]
+    \centering
+    \begin{tabular}{|p{1.5cm}|p{2cm}|p{2cm}||p{1cm}|p{1cm}|p{1cm}|p{1.2cm}||p{1cm}|p{1cm}|p{1cm}|p{1.2cm}|}
+        \hline
+        \multicolumn{3}{|c||}{\textbf{Settings}} & \multicolumn{8}{|c|}{\textbf{Performance Metrics}}  \\
+        \hline
+        \multicolumn{3}{|c||}{} & \multicolumn{4}{|c||}{\textbf{Train}} & \multicolumn{4}{|c|}{\textbf{Test}} \\
+        \hline
+        \hline
+        \textbf{ntrees} & \textbf{minsplit} & \textbf{minbucket} & \textbf{AUC} & \textbf{MCC} & \textbf{ARI} & \textbf{Top-3} & \textbf{AUC} & \textbf{MCC} & \textbf{ARI} & \textbf{Top-3} \\
+        \hline
+        10 & 10 & 7 & 0.9995 & 0.9614 & 0.9384 & 0.9980 & 0.9948 & 0.9123 & 0.8610 & 0.9811 \\
+        \hline
+        10 & 20 & 7 & 0.9994 & 0.9554 & 0.9306 & 0.9970 & 0.9962 & 0.9210 & 0.8819 & 0.9811 \\
+        \hline
+        10 & 30 & 7 & 0.9992 & 0.9435 & 0.9117 & 0.9956 & 0.9957 & 0.9163 & 0.8751 & 0.9849 \\
+        \hline
+        10 & 20 & 3 & 0.9997 & 0.9723 & 0.9547 & 0.9991 & 0.9919 & 0.9130 & 0.8720 & 0.9811 \\
+        \hline
+        10 & 20 & 14 & 0.9987 & 0.9339 & 0.8948 & 0.9927 & 0.9937 & 0.9070 & 0.8451 & 0.9819 \\
+        \hline
+        50 & 20 & 7 & 0.9997 & 0.9643 & 0.9441 & 0.9998 & 0.9975 & 0.9306 & 0.8957 & 0.9909 \\
+        \hline
+    \end{tabular}
+    \caption{Cforest gridsearch small. Maybe convert to plots?}
+    \label{tab:cforest_gs}
+\end{table}

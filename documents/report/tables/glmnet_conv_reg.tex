@@ -1,0 +1,24 @@
+%&pdflatex
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|p{3cm}||p{3cm}|p{3cm}|}
+        \hline
+        \textbf{Function} & \textbf{Parameter} & \textbf{Value} \\
+        \hline
+        \hline
+        \multirow{2}{*}{\texttt{cv.glmnet}} & \texttt{family} & "multinomial" \\
+        \cline{2-3}
+        & \texttt{standardize} & \texttt{FALSE} \\
+        \hline
+        \multirow{4}{*}{\texttt{glmnet}} & \texttt{family} & "multinomial" \\
+        \cline{2-3}
+        & \texttt{standardize} & \texttt{FALSE} \\
+        \cline{2-3}
+        & \texttt{lambda} & \texttt{lambda.min} \\
+        \cline{2-3}
+        & \texttt{alpha} & \texttt{1} \\
+        \hline
+    \end{tabular}
+    \protect\caption{Parameters used for \texttt{cv.glmnet} and \texttt{glmnet} functions.}
+    \label{tab:glmnet_conv_reg}
+\end{table}

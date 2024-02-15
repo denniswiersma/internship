@@ -1,0 +1,33 @@
+%&pdflatex
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|p{3cm}|p{3cm}|}
+        \hline
+        \textbf{Parameter} & \textbf{Values} \\
+        \hline
+        \hline
+        \multirow{2}{*}{\texttt{testtype}} & bonferroni \\
+        & univariate \\
+        \hline
+
+        \multirow{5}{*}{\texttt{ntrees}} & 5 \\
+        & 10 \\
+        & 100 \\
+        & 500 \\
+        & 1000 \\
+        \hline
+
+        \multirow{4}{*}{\texttt{minbucket}} & 3 \\
+        & 7 \\
+        & 14 \\
+        & 35 \\
+        \hline
+
+        \multirow{3}{*}{\texttt{minsplit}} & 10 \\
+        & 20 \\
+        & 50 \\
+        \hline
+    \end{tabular}
+    \caption{Values used for paramaters in conditional inference forest grid search.}
+    \label{tab:cforest_params_large}
+\end{table}

@@ -1,0 +1,26 @@
+%&pdflatex
+\begin{table}[htp]
+    \centering
+    \begin{tabular}{|p{2cm}|p{2cm}||p{1cm}|p{1cm}|p{1cm}|p{1.2cm}||p{1cm}|p{1cm}|p{1cm}|p{1.2cm}|}
+        \hline
+        \multicolumn{2}{|c||}{\textbf{Settings}} & \multicolumn{8}{|c|}{\textbf{Performance Metrics}}  \\
+        \hline
+        \multicolumn{2}{|c||}{} & \multicolumn{4}{|c||}{\textbf{Train}} & \multicolumn{4}{|c|}{\textbf{Test}} \\
+        \hline
+        \hline
+        \textbf{minsplit} & \textbf{minbucket} & \textbf{AUC} & \textbf{MCC} & \textbf{ARI} & \textbf{Top-3} & \textbf{AUC} & \textbf{MCC} & \textbf{ARI} & \textbf{Top-3} \\
+        \hline
+        10 & 7 & 0.9991 & 0.9301 & 0.8817 & 0.9911 & 0.9566 & 0.8734 & 0.8045 & 0.9367 \\
+        \hline
+        20 & 7 & 0.9989 & 0.9234 & 0.8704 & 0.9909 & 0.9593 & 0.8703 & 0.7977 & 0.9420 \\
+        \hline
+        30 & 7 & 0.9986 & 0.9141 & 0.8541 & 0.9895 & 0.9627 & 0.8687 & 0.7931 & 0.9465 \\
+        \hline
+        20 & 3 & 0.9995 & 0.9504 & 0.9135 & 0.9958 & 0.9406 & 0.8798 & 0.8076 & 0.9240 \\
+        \hline
+        20 & 14 & 0.9978 & 0.8952 & 0.8245 & 0.9854 & 0.9541 & 0.8664 & 0.7854 & 0.9443 \\
+        \hline
+    \end{tabular}
+    \caption{Ctree gridsearch small. Maybe convert to plots?}
+    \label{tab:ctree_gs}
+\end{table}

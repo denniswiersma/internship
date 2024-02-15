@@ -1,0 +1,19 @@
+%&pdflatex
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|p{3cm}|p{3cm}|p{3cm}|}
+        \hline
+        \texttt{ntrees} & \texttt{minsplit} & \texttt{minbucket} \\
+        \hline
+        \hline
+        10 & 10 & 7 \\
+        10 & 20* & 7* \\
+        10 & 30 & 7 \\
+        10 & 20 & 3 \\
+        10 & 20 & 14 \\
+        50 & 20 & 7 \\
+        \hline
+    \end{tabular}
+    \caption{Values used for paramaters in conditional inference forest grid search. Default values are indicated with *.}
+    \label{tab:cforest_params}
+\end{table}

@@ -1,0 +1,21 @@
+%&pdflatex
+\begin{figure}[htp]
+    \centering
+    \textbf{This is a beautiful figure title}\par\medskip
+    \begin{subfigure}[b]{.3\textwidth}
+        \centering
+        \includegraphics[scale=0.6]{cfgss_mcc_minsplit}
+        \cprotect\caption{MCC versus \verb|minsplit|}
+        \label{fig:cfgss_mcc_minsplit}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{.3\textwidth}
+        \centering
+        \includegraphics[scale=0.6]{cfgss_mcc_minbucket}
+        \cprotect\caption{MCC versus \verb|minbucket|}
+        \label{fig:cfgss_mcc_minbucket}
+    \end{subfigure}
+    \hspace*{\fill}
+
+    \caption{Results of gridsearch for cforest.}
+\end{figure}

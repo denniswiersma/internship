@@ -1,0 +1,82 @@
+%&pdflatex
+\documentclass[12pt]{report}
+
+% PACKAGES
+\usepackage[utf8]{inputenc} % for utf8 encoding
+\usepackage[pdftex]{graphicx} % for images
+\usepackage{geometry} % for page geometry
+\usepackage{lipsum} % for lorum ipsum placeholder text
+\usepackage[nodayofweek]{datetime} % for date formatting
+\usepackage[T1]{fontenc}
+\usepackage{titlesec, blindtext, color} % for chapter title formatting
+\usepackage{enumitem} % for list formatting
+\usepackage{booktabs} % for tables
+\usepackage{float} % for table positioning
+\usepackage{caption} % for figure and table captions
+\usepackage{subcaption} % for subfigures
+\usepackage{multirow} % for multirow tables
+\usepackage{fancyref} % for references w/ chapter number AND name
+\usepackage{cprotect} % protect captions when used with \verb
+\usepackage{tabto}
+\usepackage{hyperref}
+\usepackage{subcaption}
+
+% DOCUMENT SETTINGS
+
+% reduce spacing above chapter titles
+\titleformat{\chapter}[display]
+{\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{-50pt}{40pt}
+
+% define custom chapter title style
+\definecolor{gray75}{gray}{0.75}
+\newcommand{\hsp}{\hspace{20pt}}
+\titleformat{\chapter}[hang]{\Huge\bfseries}{\thechapter\hsp\textcolor{gray75}{|}\hsp}{0pt}{\Huge\bfseries}
+
+% define path to images
+\graphicspath{{./images}}
+
+% set page geometry
+\geometry{
+    a4paper,
+    textwidth=500pt,
+    bottom=100pt
+    }
+
+% remove space between list items
+\setlist{noitemsep}
+
+% Replace new paragraph indentation with a small skip
+\setlength\parskip{5pt plus 1pt minus 1pt}
+\setlength\parindent{0pt}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=red,
+    citecolor=black,
+    urlcolor=cyan,
+    }
+
+% DOCUMENT
+\begin{document}
+    \pagenumbering{gobble} % disable page numbering
+    \input{title_page}
+    \input{chapters/foreword}
+    \input{chapters/abstract}
+    \input{chapters/abbreviations}
+    \input{chapters/organisation}
+
+    \tableofcontents
+
+    \input{chapters/introduction}
+    \pagenumbering{arabic}
+    \setcounter{page}{5} % set page number to 5 when starting with introduction
+    \input{chapters/methods}
+    \input{chapters/results}
+    \input{chapters/discussion_conclusion}
+    \bibliography{refs.bib}
+    \bibliographystyle{apalike}
+    \input{chapters/appendix}
+
+\end{document}

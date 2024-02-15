@@ -3,7 +3,13 @@
 *.out
 *.log
 *.toc
+*.bbl
+*.blg
 *.pdf
+*.cpt
+
+# data
+*.csv
 
 # MacOS
 .DS_Store
