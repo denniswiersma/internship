@@ -51,6 +51,7 @@ class Data:
         with open(self.config["data"]["locations"]["tumor_types"]) as file:
             self.tumor_types: pd.DataFrame = pd.read_csv(
                 file,
+                sep="\t",
                 usecols=[
                     self.config["data"]["columns"]["tumor_types"][
                         "sample_name"
