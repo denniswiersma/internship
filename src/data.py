@@ -250,10 +250,12 @@ class Data:
         # subset of data with only the randomly selected labels
         subset = data[data["response"].isin(tumor_types)]
 
+        subset = subset.drop(columns=["response"])
         # randomly select n_rows rows and n_cols columns from the subset
         subset = subset.sample(n=n_rows, axis=0)
         subset = subset.sample(n=n_cols, axis=1)  # type: ignore
 
+        subset.insert(loc=1, column="response", value=data["response"])
         # at least 2 samples per tumor type are needed for glmnet, so
         # if the number of samples per tumor type is less than 2
         # or if the number of tumor types is less than n_labels

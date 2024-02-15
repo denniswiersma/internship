@@ -57,8 +57,13 @@ class Cforest(Model):
         self.ctree_control = ctree_control
 
         pandas2ri.activate()
-        train["response"] = train["response"].astype("category")
-        r_train = pandas2ri.py2rpy(train)
+        # a copy of the training set is made to avoid changing the original
+        # dataframe. This is necessary if one wants to predict and assess on
+        # the training set in addition to the test/val set in order to compare
+        # their results.
+        train_copy = train.copy()
+        train_copy["response"] = train_copy["response"].astype("category")
+        r_train = pandas2ri.py2rpy(train_copy)
         robjects.r.assign("train", r_train)  # type: ignore
 
         # import partykit and make objects
@@ -85,7 +90,7 @@ class Cforest(Model):
         end = time.perf_counter()
 
         elapsed_min = (end - start) / 60
-        self.lm.add_fit_buffer(f"forst built in {elapsed_min:0.2f} minutes")
+        self.lm.add_fit_buffer(f"forest built in {elapsed_min:0.2f} minutes")
 
     def predict(self, newx, type: str):
         # activate pandas to R converter
@@ -107,13 +112,13 @@ class Cforest(Model):
             pred = robjects.r("type.convert(pred, as.is=TRUE)")  # type: ignore
         return pred
 
-    def assess(self, ytrue, ypredict, ypredict_probs):
+    def assess(self, ytrue, ypredict, ypredict_probs, name: str = "clustermap"):
         # metrics
         _, _ = super().assess(ytrue, ypredict, ypredict_probs)
 
         # clustermap
         output_dir = Path(self.data.config["output"]["locations"]["cforest"])
-        output_dir = output_dir.joinpath(self.runID, "clustermap")
+        output_dir = output_dir.joinpath(self.runID, name)
 
         self._clustermap(ypredict_probs, ytrue, output_dir)
 
