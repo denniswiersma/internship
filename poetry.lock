@@ -1675,10 +1675,7 @@ files = [
 ]
 
 [package.dependencies]
-numpy = [
-    {version = ">=1.23.2,<2", markers = "python_version == \"3.11\""},
-    {version = ">=1.26.0,<2", markers = "python_version >= \"3.12\""},
-]
+numpy = {version = ">=1.26.0,<2", markers = "python_version >= \"3.12\""}
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
 tzdata = ">=2022.1"
@@ -2853,10 +2850,5 @@ files = [
 
 [metadata]
 lock-version = "2.0"
-<<<<<<< Updated upstream
-python-versions = ">=3.11,<3.13"
-content-hash = "278a448a1ba0cce9b456a46199903fcf5a273995c54a62d90aff0c117f9e7e01"
-=======
 python-versions = ">=3.12,<3.13"
-content-hash = "841443addc790fa5e21f6192bc6cedbf4e46bb30b3b01f7fe24e8d5d05685315"
->>>>>>> Stashed changes
+content-hash = "5b32c849610d87882bfa361823003dd5d490788f7d80d64ca5c609ae4c69270a"
